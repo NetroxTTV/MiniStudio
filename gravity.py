@@ -8,18 +8,21 @@ vec = pygame.math.Vector2
 HEIGHT = 550
 WIDTH = 1000
 ACC = 1
-FRIC = 0
+FRIC = -0.14
 FPS = 60
 FramePerSec = pygame.time.Clock()
- 
+
+img = pygame.transform.scale(pygame.image.load(r'pik.png'), (80, 80))
+bg = pygame.transform.scale(pygame.image.load(r'bg2.jpg'), (WIDTH, HEIGHT))
+
+
 displaysurface = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Game")
  
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() 
-        self.surf = pygame.Surface((30, 30))
-        self.surf.fill((128,255,40))
+        self.surf = pygame.Surface((80, 80))
         self.rect = self.surf.get_rect()
    
         self.pos = vec((10, 385))
@@ -30,9 +33,9 @@ class Player(pygame.sprite.Sprite):
         self.acc = vec(0,0.5)
     
         pressed_keys = pygame.key.get_pressed()            
-        if pressed_keys[K_LEFT]:
+        if pressed_keys[K_q]:
             self.acc.x = -ACC
-        if pressed_keys[K_RIGHT]:
+        if pressed_keys[K_d]:
             self.acc.x = ACC
              
         self.acc.x += self.vel.x * FRIC
@@ -58,11 +61,18 @@ class Player(pygame.sprite.Sprite):
         if hits:
             self.vel.y = -15
     
+    def slide(self):
+        hits = pygame.sprite.spritecollide(P1 ,platforms, False)
+        if hits and -10 < self.vel.x < 10:
+            self.vel.x *= 5
+        elif not(hits):
+            self.vel.y += 30
+    
 class platform(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.surf = pygame.Surface((WIDTH, 20))
-        self.surf.fill((255,0,0))
+        self.surf.fill((100,100,100))
         self.rect = self.surf.get_rect(center = (WIDTH/2, HEIGHT - 10))
  
 
@@ -83,12 +93,16 @@ while True:
         if event.type == pygame.KEYDOWN:    
             if event.key == pygame.K_SPACE:
                 P1.jump()
+            if event.key == pygame.K_s:
+                P1.slide()
      
     displaysurface.fill((0,0,0))
     P1.move()
     P1.update()
-    for entity in all_sprites:
-        displaysurface.blit(entity.surf, entity.rect)
+
+    displaysurface.blit(bg, (0, 0))
+    displaysurface.blit(img, P1.rect)
+    displaysurface.blit(PT1.surf, PT1.rect)
     
     pygame.display.update()
     FramePerSec.tick(FPS)
