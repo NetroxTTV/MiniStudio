@@ -1,4 +1,5 @@
 import pygame
+import time
 #from sol import Sol
 pygame.init()
 
@@ -16,7 +17,6 @@ class Player:
         self.life = 100
         self.atk = 10
         
-
     def gravity(self):
         self.y += 3.2 
 
@@ -39,9 +39,11 @@ def gd(window_width, window_height):
     return gd
 
 def play(gameDisplay, playerX, playerY):
+    
     clock = pygame.time.Clock()
     running = True
     dt = 0.01
+    a = 0
 
     while running:
 
@@ -50,12 +52,25 @@ def play(gameDisplay, playerX, playerY):
         Player().player(playerX, playerY)
         
         for event in pygame.event.get():
-################### PLAYER MOVEMENT
+
+################### CLICK CHECK ################### 
+            
+            point = pygame.mouse.get_pos()
+
+
+            if pygame.mouse.get_pressed()[0]:
+                a=a+1  
+                time.sleep(0.1)
+                pygame.draw.circle(bg, "red", point, 20, width=0)
+                print("yes", a)
+
+
+################### PLAYER MOVEMENT ################### 
+            
             keys = pygame.key.get_pressed()
             if keys[pygame.K_o]:
                 pygame.QUIT
                 running = False
-            
             if keys[pygame.K_z]:
                     playerY -= 500 * dt
             if keys[pygame.K_s]:
@@ -64,7 +79,6 @@ def play(gameDisplay, playerX, playerY):
                     playerX -= 500 * dt
             if keys[pygame.K_d]:
                     playerX += 500 * dt
-        
         pygame.display.update() 
         clock.tick(BaseWindow().fps)
     #####################
