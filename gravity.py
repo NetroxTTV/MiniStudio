@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 import sys
- 
+
 pygame.init()
  
 vec = pygame.math.Vector2 
@@ -28,17 +28,26 @@ class Player(pygame.sprite.Sprite):
         self.pos = vec((10, 385))
         self.vel = vec(0,0)
         self.acc = vec(0,0)
+
+        self.direction = 0 #0 = right 1 = left
+        self.fric = FRIC
  
     def move(self):
-        self.acc = vec(0,0.5)
-    
+        self.acc = vec(0,1)
+
         pressed_keys = pygame.key.get_pressed()            
-        if pressed_keys[K_q]:
-            self.acc.x = -ACC
-        if pressed_keys[K_d]:
-            self.acc.x = ACC
+        if pressed_keys[K_s]:
+            self.slide()
+        else:
+            if pressed_keys[K_q]:
+                self.acc.x = -ACC
+                self.direction = 0
+            if pressed_keys[K_d]:
+                self.acc.x = ACC
+                self.direction = 1
+
              
-        self.acc.x += self.vel.x * FRIC
+        self.acc.x += self.vel.x * self.fric
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
          
@@ -48,6 +57,9 @@ class Player(pygame.sprite.Sprite):
             self.pos.x = WIDTH
             
         self.rect.midbottom = self.pos
+
+        self.fric = FRIC
+        
 
     def update(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
@@ -61,12 +73,17 @@ class Player(pygame.sprite.Sprite):
         if hits:
             self.vel.y = -15
     
-    def slide(self):
+    def dash(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
         if hits and -10 < self.vel.x < 10:
             self.vel.x *= 5
-        elif not(hits):
-            self.vel.y += 30
+    
+    def slide(self):
+        hits = pygame.sprite.spritecollide(P1 ,platforms, False)
+        if hits:
+            self.fric = -0.0004
+
+
     
 class platform(pygame.sprite.Sprite):
     def __init__(self):
@@ -93,11 +110,12 @@ while True:
         if event.type == pygame.KEYDOWN:    
             if event.key == pygame.K_SPACE:
                 P1.jump()
-            if event.key == pygame.K_s:
-                P1.slide()
+            if event.key == pygame.K_LSHIFT:
+                P1.dash()
      
     displaysurface.fill((0,0,0))
     P1.move()
+
     P1.update()
 
     displaysurface.blit(bg, (0, 0))
