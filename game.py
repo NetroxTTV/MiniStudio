@@ -71,6 +71,29 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         elif not(hits):
             self.vel.y += 30
 
+class snowball:
+    def __init__(self, x, y, targetx, targety):
+        self.speed = 6
+    
+        self.surf = pygame.Surface((20,20))
+        self.rect = self.surf.get_rect()
+
+        self.rect.midbottom = P1.rect.midbottom
+        self.point = pygame.mouse.get_pos()
+
+        self.angle = math.atan2(targety-y, targetx-x) 
+
+        self.dx = math.cos(self.angle)*self.speed
+        self.dy = math.sin(self.angle)*self.speed
+        self.x = x
+        self.y = y
+
+    def move(self):
+        self.x = self.x + self.dx
+        self.y = self.y + self.dy 
+        self.rect.x = int(self.x)
+        self.rect.y = int(self.y)
+
 class platform(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self):
         super().__init__()
@@ -95,30 +118,6 @@ def gd(window_width, window_height): # PAS TOUCHE
     gd = pygame.display.set_mode((window_width,window_height))
     pygame.display.set_caption('PIKMIN')
     return gd
-
-class snowball:
-    def __init__(self, x, y, targetx, targety):
-        self.speed = 4
-    
-        self.surf = pygame.Surface((20,20))
-        self.rect = self.surf.get_rect()
-
-        self.rect.midbottom = P1.rect.midbottom
-        self.point = pygame.mouse.get_pos()
-
-        self.angle = math.atan2(targety-y, targetx-x) 
-
-        self.dx = math.cos(self.angle)*self.speed
-        self.dy = math.sin(self.angle)*self.speed
-        self.x = x
-        self.y = y
-
-    def move(self):
-        self.x = self.x + self.dx
-        self.y = self.y + self.dy
-        self.y = self.y - 1
-        self.rect.x = int(self.x)
-        self.rect.y = int(self.y)
     
 def play(gameDisplay):
     
@@ -137,7 +136,7 @@ def play(gameDisplay):
             
             if pygame.mouse.get_pressed()[0]:
                 x,y = pygame.mouse.get_pos()
-                s.append(snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y))
+                s.append(snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y ))
                 snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] - 25,  x,y)
 ################### PLAYER MOVEMENT ################### 
             
