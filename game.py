@@ -38,6 +38,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         pressed_keys = pygame.key.get_pressed()            
         if pressed_keys[K_q]:
             self.acc.x = -BaseWindow().ACC
+            
         if pressed_keys[K_d]:
             self.acc.x = BaseWindow().ACC
              
@@ -119,7 +120,7 @@ def gd(window_width, window_height): # PAS TOUCHE
     pygame.display.set_caption('PIKMIN')
     return gd
     
-def play(gameDisplay):
+def play(gameDisplay, playerIMG):
     
     clock = pygame.time.Clock()
     running = True
@@ -147,6 +148,7 @@ def play(gameDisplay):
             if keys[pygame.K_SPACE]:
                 P1.jump()
             if keys[pygame.K_s]:
+                playerIMG = pygame.transform.rotate(playerIMG, -90)
                 P1.slide()
 
         gameDisplay.fill((0,0,0))
@@ -178,6 +180,6 @@ platforms.add(PT1)
 
 bg, playerIMG, snowballimg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
-play(gameDisplay)
+play(gameDisplay, playerIMG)
 
 pygame.quit()
