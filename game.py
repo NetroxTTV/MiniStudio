@@ -74,13 +74,13 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
     
     def dash(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
-        if hits and -10 < self.vel.x < 10:
-            self.vel.x *= 5
+        if hits:
+            self.vel.x += 30 * (1 if self.vel.x >= -0.01 else -1)
     
     def slide(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
         if hits:
-            self.fric = -0.0004
+            self.fric = -0.009
 
 class snowball:
     def __init__(self, x, y, targetx, targety):
@@ -125,7 +125,7 @@ def setup_imgs(window_width, window_height):
     playerI = pygame.transform.rotate(img, 0)
 
     # snowball image
-    snowballimg = pygame.transform.scale(pygame.image.load(r'pik.png'), (20, 20))
+    snowballimg = pygame.transform.scale(pygame.image.load(r'snowball.png'), (20, 20))
 
     return background, playerI, snowballimg
 
@@ -134,9 +134,14 @@ def gd(window_width, window_height): # PAS TOUCHE
     pygame.display.set_caption('PIKMIN')
     return gd
     
-def play(gameDisplay):
+def play(gameDisplay, playerIMG):
     
     clock = pygame.time.Clock()
+    lastsnowball = pygame.time.get_ticks()
+    cooldownsnowball = 0  #ms
+    lastdash = pygame.time.get_ticks()
+    cooldowndash = 1000 #ms
+    sliding = False
     running = True
     s = []
 
@@ -150,9 +155,14 @@ def play(gameDisplay):
 ################### CLICK CHECK ################### 
             
             if pygame.mouse.get_pressed()[0]:
-                x,y = pygame.mouse.get_pos()
-                s.append(snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y ))
-                snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] - 25,  x,y)
+                now = pygame.time.get_ticks()
+                if now - lastsnowball >= cooldownsnowball:
+                    lastsnowball = now
+                    x,y = pygame.mouse.get_pos()
+                    s.append(snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y ))
+                    snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] - 25,  x,y)
+
+
 ################### PLAYER MOVEMENT ################### 
             
             keys = pygame.key.get_pressed()
@@ -161,8 +171,20 @@ def play(gameDisplay):
                 running = False
             if keys[pygame.K_SPACE]:
                 P1.jump()
+            
             if keys[pygame.K_LSHIFT]:
-                P1.dash()
+                now = pygame.time.get_ticks()
+                if now - lastdash >= cooldowndash and -10 < P1.vel.x < 10:
+                    lastdash = now
+                    playerIMG = pygame.transform.rotate(playerIMG, -90)
+                    sliding = True
+                    P1.dash()
+            now = pygame.time.get_ticks()
+            if now - lastdash >= (cooldowndash //30)  and sliding:
+                playerIMG = pygame.transform.rotate(playerIMG, 90)
+                sliding = False
+
+                
 
         gameDisplay.fill((0,0,0))
         P1.move()
@@ -193,6 +215,6 @@ platforms.add(PT1)
 
 bg, playerIMG, snowballimg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
-play(gameDisplay)
+play(gameDisplay, playerIMG)
 
 pygame.quit()
