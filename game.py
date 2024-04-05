@@ -20,14 +20,16 @@ class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
 
 class Player(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self):
-        super().__init__() 
+        super().__init__()
+        self.img = pygame.transform.scale(pygame.image.load(r'pik.png'), (80, 80))
         self.speed = 1
         self.life = 100
         self.atk = 10
         
         self.surf = pygame.Surface((80, 80))
         self.rect = self.surf.get_rect()
-   
+
+        self.direction = 1
         self.pos = BaseWindow().vec((1920/2, 1080/2))
         self.vel = BaseWindow().vec(0,0)
         self.acc = BaseWindow().vec(0,0)
@@ -43,7 +45,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         else:
             if pressed_keys[K_q]:
                 self.acc.x = -BaseWindow().ACC
-                self.direction = 0
+                self.direction = -1
             if pressed_keys[K_d]:
                 self.acc.x = BaseWindow().ACC
                 self.direction = 1
@@ -75,6 +77,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
     def dash(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
         if hits:
+            self.img = pygame.transform.rotate(self.img, -90)
             self.vel.x += 30 * (1 if self.vel.x >= -0.01 else -1)
     
     def slide(self):
@@ -82,15 +85,30 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         if hits:
             self.fric = -0.009
 
-class snowball:
+class Axe(pygame.sprite.Sprite):
+    def __init__(self, Playerpos):
+        super().__init__()
+        
+        self.surf = pygame.Surface((40,30))
+        self.surf.fill((0,0,0))
+        self.rect = self.surf.get_rect()
+        self.img = pygame.transform.scale(pygame.image.load(r'pik.png'), (40, 30))
+        
+        self.pos = Playerpos
+
+        self.rect.center = P1.rect.center
+
+class Snowball(pygame.sprite.Sprite):
     def __init__(self, x, y, targetx, targety):
-        self.speed = 20
-    
+        super().__init__()
+
+        self.speed = 10
+        
         self.surf = pygame.Surface((20,20))
         self.rect = self.surf.get_rect()
+        self.img = pygame.transform.scale(pygame.image.load(r'snowball.png'), (20, 20))
 
         self.rect.midbottom = P1.rect.midbottom
-        self.point = pygame.mouse.get_pos()
 
         self.angle = math.atan2(targety-y, targetx-x) 
 
@@ -100,8 +118,7 @@ class snowball:
         self.pos = BaseWindow().vec((x, y))
 
     def move(self):
-        self.acc = BaseWindow().vec(0,0.3)
-        
+        self.acc = BaseWindow().vec(0,0.1)
 
         self.acc.x += self.vel.x * -0.001
         self.vel += self.acc
@@ -109,7 +126,7 @@ class snowball:
          
         self.rect.center = self.pos
 
-class platform(pygame.sprite.Sprite): # PAS TOUCHE
+class Platform(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self):
         super().__init__()
         self.surf = pygame.Surface((BaseWindow().wid, 20))
@@ -120,51 +137,59 @@ def setup_imgs(window_width, window_height):
     # background image
     background = pygame.transform.scale(pygame.image.load(r'bg2.jpg'), (window_width, window_height))
 
-    # player image + rotate
-    img = pygame.transform.scale(pygame.image.load(r'pik.png'), (80, 80))
-    playerI = pygame.transform.rotate(img, 0)
-
-    # snowball image
-    snowballimg = pygame.transform.scale(pygame.image.load(r'snowball.png'), (20, 20))
-
-    return background, playerI, snowballimg
+    return background
 
 def gd(window_width, window_height): # PAS TOUCHE
     gd = pygame.display.set_mode((window_width,window_height))
     pygame.display.set_caption('PIKMIN')
     return gd
     
-def play(gameDisplay, playerIMG):
+def play(gameDisplay):
     
     clock = pygame.time.Clock()
-    lastsnowball = pygame.time.get_ticks()
-    cooldownsnowball = 0  #ms
-    lastdash = pygame.time.get_ticks()
+    startCD = pygame.time.get_ticks()
+    lastsnowball = startCD
+    cooldownsnowball = 500  #ms
+
+    lastdash = startCD
     cooldowndash = 1000 #ms
+
+    lastaxe = startCD
+    cooldownaxe = 1000#ms
+
+    Axeactive = False
     sliding = False
     running = True
-    s = []
+    snowballs = []
 
     while running:
-
-        gameDisplay.fill((0, 0, 0))
-        gameDisplay.blit(bg, (0, 0))
+        
         
         for event in pygame.event.get():
 
-################### CLICK CHECK ################### 
+##################### CLICK CHECK ##################### 
             
             if pygame.mouse.get_pressed()[0]:
                 now = pygame.time.get_ticks()
                 if now - lastsnowball >= cooldownsnowball:
                     lastsnowball = now
                     x,y = pygame.mouse.get_pos()
-                    s.append(snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y ))
-                    snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] - 25,  x,y)
+                    snowball = Snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y )
+                    AtksP.add(snowball)
+                    snowballs.append(snowball)
+
+            if pygame.mouse.get_pressed()[2]:
+                now = pygame.time.get_ticks()
+                if now - lastaxe >= cooldownaxe and not(Axeactive):
+                    lastaxe = now
+                    Axeactive = True
+                if now - lastaxe >= (cooldownaxe/2) and Axeactive:
+                    Axeactive = False
 
 
-################### PLAYER MOVEMENT ################### 
-            
+#######################################################
+################### PLAYER MOVEMENT ###################
+                    
             keys = pygame.key.get_pressed()
             if keys[pygame.K_o]:
                 pygame.QUIT
@@ -174,47 +199,66 @@ def play(gameDisplay, playerIMG):
             
             if keys[pygame.K_LSHIFT]:
                 now = pygame.time.get_ticks()
-                if now - lastdash >= cooldowndash and -10 < P1.vel.x < 10:
+                if now - lastdash >= cooldowndash and -10 < P1.vel.x < 10 and not(sliding):
                     lastdash = now
-                    playerIMG = pygame.transform.rotate(playerIMG, -90)
                     sliding = True
                     P1.dash()
+                if now - lastdash >= (cooldowndash //30)  and sliding:
+                    P1.img = pygame.transform.rotate(P1.img, 90)
+                    sliding = False
             now = pygame.time.get_ticks()
             if now - lastdash >= (cooldowndash //30)  and sliding:
-                playerIMG = pygame.transform.rotate(playerIMG, 90)
+                P1.img = pygame.transform.rotate(P1.img, 90)
                 sliding = False
 
-                
+#######################################################
+################# GAME UPDATE/DISPLAY #################
 
-        gameDisplay.fill((0,0,0))
         P1.move()
         P1.update()
-
+        AXE
+        if Axeactive:
+            gameDisplay.blit(AXE.surf, AXE.rect)
+        
+        gameDisplay.fill((0,0,0))
         gameDisplay.blit(bg, (0, 0))
-        gameDisplay.blit(playerIMG, P1.rect)
+        gameDisplay.blit(P1.img, P1.rect)
         gameDisplay.blit(PT1.surf, PT1.rect)
-        for entity in s:
 
-            gameDisplay.blit(snowballimg, entity.rect)
+        for entity in snowballs:
             entity.move()
-
+            gameDisplay.blit(entity.img, entity.rect)
+            
         pygame.display.update() 
         clock.tick(BaseWindow().fps)
+        
+#######################################################
 
-    #####################
-
-PT1 = platform()
+PT1 = Platform()
 P1 = Player()
+AXE = Axe(P1.pos)
+
 
 all_sprites = pygame.sprite.Group()
 all_sprites.add(PT1)
 all_sprites.add(P1)
+all_sprites.add(AXE)
+
 
 platforms = pygame.sprite.Group()
 platforms.add(PT1)
 
-bg, playerIMG, snowballimg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
+AtksP = pygame.sprite.Group()
+AtksP.add(AXE)
+
+
+AtksE = pygame.sprite.Group()
+
+
+bg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
-play(gameDisplay, playerIMG)
+
+
+play(gameDisplay)
 
 pygame.quit()
