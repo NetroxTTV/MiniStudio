@@ -32,17 +32,23 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.vel = BaseWindow().vec(0,0)
         self.acc = BaseWindow().vec(0,0)
 
+        self.fric = BaseWindow().FRIC
+
     def move(self):
         self.acc = BaseWindow().vec(0,0.5)
     
         pressed_keys = pygame.key.get_pressed()            
-        if pressed_keys[K_q]:
-            self.acc.x = -BaseWindow().ACC
-            
-        if pressed_keys[K_d]:
-            self.acc.x = BaseWindow().ACC
+        if pressed_keys[K_s]:
+            self.slide()
+        else:
+            if pressed_keys[K_q]:
+                self.acc.x = -BaseWindow().ACC
+                self.direction = 0
+            if pressed_keys[K_d]:
+                self.acc.x = BaseWindow().ACC
+                self.direction = 1
              
-        self.acc.x += self.vel.x * BaseWindow().FRIC
+        self.acc.x += self.vel.x * self.fric
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
          
@@ -52,6 +58,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
             self.pos.x = BaseWindow().wid
             
         self.rect.midbottom = self.pos
+        self.fric = BaseWindow().FRIC
 
     def update(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
@@ -65,16 +72,19 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         if hits:
             self.vel.y = -15
     
+    def dash(self):
+        hits = pygame.sprite.spritecollide(P1 ,platforms, False)
+        if hits:
+            self.vel.x += 30 * (1 if self.vel.x >= -0.01 else -1)
+    
     def slide(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
-        if hits and -10 < self.vel.x < 10:
-            self.vel.x *= 5
-        elif not(hits):
-            self.vel.y += 30
+        if hits:
+            self.fric = -0.009
 
 class snowball:
     def __init__(self, x, y, targetx, targety):
-        self.speed = 6
+        self.speed = 20
     
         self.surf = pygame.Surface((20,20))
         self.rect = self.surf.get_rect()
@@ -84,16 +94,42 @@ class snowball:
 
         self.angle = math.atan2(targety-y, targetx-x) 
 
-        self.dx = math.cos(self.angle)*self.speed
-        self.dy = math.sin(self.angle)*self.speed
-        self.x = x
-        self.y = y
+        self.dir = BaseWindow().vec(math.cos(self.angle)*self.speed,math.sin(self.angle)*self.speed)
+        self.acc = BaseWindow().vec(0,0)
+        self.vel = self.dir
+        self.pos = BaseWindow().vec((x, y))
 
     def move(self):
-        self.x = self.x + self.dx
-        self.y = self.y + self.dy 
-        self.rect.x = int(self.x)
-        self.rect.y = int(self.y)
+        self.acc = BaseWindow().vec(0,0.3)
+        
+
+        self.acc.x += self.vel.x * -0.001
+        self.vel += self.acc
+        self.pos += self.vel + 0.5 * self.acc
+         
+        self.rect.center = self.pos
+
+class Niveau(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.coords = open("level0_data.csv", "r", encoding='utf-8')
+        self.length = 0
+        self.tab = []
+        self.tab_area = []
+        
+        for x in open("level0_data.csv"):
+            self.length += 1
+            y = x.split(",")
+
+            self.tab.append(y)
+
+    def Level(self):
+        for i in range(self.length):
+            for j in range(30):
+                if self.tab[i][j] == "0":
+                    self.tab_area.append([i, j])
+                    self.tab_area
+        return self.tab_area
 
 class platform(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self):
@@ -123,6 +159,11 @@ def gd(window_width, window_height): # PAS TOUCHE
 def play(gameDisplay, playerIMG):
     
     clock = pygame.time.Clock()
+    lastsnowball = pygame.time.get_ticks()
+    cooldownsnowball = 0  #ms
+    lastdash = pygame.time.get_ticks()
+    cooldowndash = 1000 #ms
+    sliding = False
     running = True
     s = []
 
@@ -136,9 +177,14 @@ def play(gameDisplay, playerIMG):
 ################### CLICK CHECK ################### 
             
             if pygame.mouse.get_pressed()[0]:
-                x,y = pygame.mouse.get_pos()
-                s.append(snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y ))
-                snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] - 25,  x,y)
+                now = pygame.time.get_ticks()
+                if now - lastsnowball >= cooldownsnowball:
+                    lastsnowball = now
+                    x,y = pygame.mouse.get_pos()
+                    s.append(snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y ))
+                    snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] - 25,  x,y)
+
+
 ################### PLAYER MOVEMENT ################### 
             
             keys = pygame.key.get_pressed()
@@ -147,9 +193,20 @@ def play(gameDisplay, playerIMG):
                 running = False
             if keys[pygame.K_SPACE]:
                 P1.jump()
-            if keys[pygame.K_s]:
-                playerIMG = pygame.transform.rotate(playerIMG, -90)
-                P1.slide()
+            
+            if keys[pygame.K_LSHIFT]:
+                now = pygame.time.get_ticks()
+                if now - lastdash >= cooldowndash and -10 < P1.vel.x < 10:
+                    lastdash = now
+                    playerIMG = pygame.transform.rotate(playerIMG, -90)
+                    sliding = True
+                    P1.dash()
+            now = pygame.time.get_ticks()
+            if now - lastdash >= (cooldowndash //30)  and sliding:
+                playerIMG = pygame.transform.rotate(playerIMG, 90)
+                sliding = False
+
+                
 
         gameDisplay.fill((0,0,0))
         P1.move()
@@ -177,6 +234,9 @@ all_sprites.add(P1)
 
 platforms = pygame.sprite.Group()
 platforms.add(PT1)
+
+p = Niveau().Level()
+
 
 bg, playerIMG, snowballimg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
