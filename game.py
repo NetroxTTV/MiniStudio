@@ -12,7 +12,7 @@ class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
         super().__init__()
         self.wid = 1920
         self.hei = 1080
-        self.fps = 120
+        self.fps = 160
         self.ACC = 1
         self.FRIC = -0.14
         self.FramePerSec = pygame.time.Clock()
@@ -26,7 +26,8 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.life = 100
         self.atk = 10
         
-        self.surf = pygame.Surface((80, 80))
+        self.surf = pygame.Surface((50, 80))
+        self.surf.fill((255,0,0))
         self.rect = self.surf.get_rect()
 
         self.direction = 1
@@ -63,12 +64,20 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.fric = BaseWindow().FRIC
 
     def update(self):
+        
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
         if P1.vel.y > 0:        
             if hits:
                 self.vel.y = 0
-                self.pos.y = hits[0].rect.top + 1
-    	
+                
+                self.pos.y = hits[0].rect.top +1
+                if len(hits) > 1:
+                    if hits[1].rect.left - P1.pos[0] > 0 :
+                        self.vel.x = 0
+                    
+                        self.pos.x = hits[1].rect.left +1
+            
+
     def jump(self):
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
@@ -79,6 +88,8 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         if hits:
             self.img = pygame.transform.rotate(self.img, -90)
             self.vel.x += 30 * (1 if self.vel.x >= -0.01 else -1)
+            return True
+        return False
     
     def slide(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
@@ -89,14 +100,12 @@ class Axe(pygame.sprite.Sprite):
     def __init__(self, Playerpos):
         super().__init__()
         
-        self.surf = pygame.Surface((40,30))
+        self.surf = pygame.Surface((60,30))
         self.surf.fill((0,0,0))
         self.rect = self.surf.get_rect()
-        self.img = pygame.transform.scale(pygame.image.load(r'pik.png'), (40, 30))
-        
-        self.pos = Playerpos
+        self.img = pygame.transform.scale(pygame.image.load(r'pik.png'), (60, 30))
 
-        self.rect.center = P1.rect.center
+        self.pos = Playerpos
 
 class Snowball(pygame.sprite.Sprite):
     def __init__(self, x, y, targetx, targety):
@@ -127,11 +136,11 @@ class Snowball(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
 class Platform(pygame.sprite.Sprite): # PAS TOUCHE
-    def __init__(self):
+    def __init__(self,  w,h,x, y):
         super().__init__()
-        self.surf = pygame.Surface((BaseWindow().wid, 20))
+        self.surf = pygame.Surface((w,h))
         self.surf.fill((100,100,100))
-        self.rect = self.surf.get_rect(center = (BaseWindow().wid/2, BaseWindow().hei - 10))
+        self.rect = self.surf.get_rect(center = (x,y))
  
 def setup_imgs(window_width, window_height):
     # background image
@@ -156,8 +165,10 @@ def play(gameDisplay):
 
     lastaxe = startCD
     cooldownaxe = 1000#ms
+    ChargeStart = 0
 
-    Axeactive = False
+
+    AxeBaseActive = False
     sliding = False
     running = True
     snowballs = []
@@ -178,15 +189,24 @@ def play(gameDisplay):
                     AtksP.add(snowball)
                     snowballs.append(snowball)
 
+            
             if pygame.mouse.get_pressed()[2]:
-                now = pygame.time.get_ticks()
-                if now - lastaxe >= cooldownaxe and not(Axeactive):
+                ChargeStart += 10
+                print(ChargeStart)
+            if not(pygame.mouse.get_pressed()[2]):
+                if ChargeStart >= 600 and not(AxeBaseActive):
+                    now = pygame.time.get_ticks()
                     lastaxe = now
-                    Axeactive = True
-                if now - lastaxe >= (cooldownaxe/2) and Axeactive:
-                    Axeactive = False
+                    AxeBaseActive = True
 
+                elif ChargeStart >= 60 and not(AxeBaseActive):
+                    now = pygame.time.get_ticks()
+                    lastaxe = now
+                    AxeBaseActive = True
 
+                ChargeStart = 0
+                
+            
 #######################################################
 ################### PLAYER MOVEMENT ###################
                     
@@ -201,29 +221,37 @@ def play(gameDisplay):
                 now = pygame.time.get_ticks()
                 if now - lastdash >= cooldowndash and -10 < P1.vel.x < 10 and not(sliding):
                     lastdash = now
-                    sliding = True
-                    P1.dash()
-                if now - lastdash >= (cooldowndash //30)  and sliding:
-                    P1.img = pygame.transform.rotate(P1.img, 90)
-                    sliding = False
-            now = pygame.time.get_ticks()
-            if now - lastdash >= (cooldowndash //30)  and sliding:
-                P1.img = pygame.transform.rotate(P1.img, 90)
-                sliding = False
+                    sliding = P1.dash()
+            
 
 #######################################################
 ################# GAME UPDATE/DISPLAY #################
 
+        now = pygame.time.get_ticks()
+
+        if now - lastdash >= (cooldowndash //5)  and sliding:
+            P1.img = pygame.transform.rotate(P1.img, 90)
+            sliding = False
+        if now - lastaxe >= (cooldownaxe/2) and AxeBaseActive:
+            AxeBaseActive = False
+        else:
+            AXE.rect.center = P1.rect.center + BaseWindow().vec((50*P1.direction,15))
+
+        
         P1.move()
         P1.update()
-        AXE
-        if Axeactive:
-            gameDisplay.blit(AXE.surf, AXE.rect)
         
+
         gameDisplay.fill((0,0,0))
         gameDisplay.blit(bg, (0, 0))
+
+        gameDisplay.blit(P1.surf, P1.rect)
         gameDisplay.blit(P1.img, P1.rect)
         gameDisplay.blit(PT1.surf, PT1.rect)
+        gameDisplay.blit(PT2.surf, PT2.rect)
+
+        if AxeBaseActive:
+            gameDisplay.blit(AXE.surf, AXE.rect)
 
         for entity in snowballs:
             entity.move()
@@ -234,19 +262,22 @@ def play(gameDisplay):
         
 #######################################################
 
-PT1 = Platform()
+PT1 = Platform(BaseWindow().wid - 500, 20,BaseWindow().wid/2, BaseWindow().hei - 100)
+PT2 = Platform(60, 500,500,800)
 P1 = Player()
 AXE = Axe(P1.pos)
 
 
 all_sprites = pygame.sprite.Group()
 all_sprites.add(PT1)
+all_sprites.add(PT2)
 all_sprites.add(P1)
 all_sprites.add(AXE)
 
 
 platforms = pygame.sprite.Group()
 platforms.add(PT1)
+platforms.add(PT2)
 
 AtksP = pygame.sprite.Group()
 AtksP.add(AXE)
