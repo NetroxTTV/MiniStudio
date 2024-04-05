@@ -236,7 +236,7 @@ platforms = pygame.sprite.Group()
 platforms.add(PT1)
 
 p = Niveau().Level()
-
+print(p)
 
 bg, playerIMG, snowballimg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
