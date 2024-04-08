@@ -31,15 +31,19 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.rect = self.surf.get_rect()
 
         self.direction = 1
-        self.pos = BaseWindow().vec((1920/2, 1080/2))
+        self.pos = BaseWindow().vec((0, 0))
         self.vel = BaseWindow().vec(0,0)
         self.acc = BaseWindow().vec(0,0)
 
         self.fric = BaseWindow().FRIC
 
     def move(self):
+        lastacc = self.acc
+        lastvel = self.vel
+        lastpos = self.pos.x
         self.acc = BaseWindow().vec(0,0.5)
-    
+        
+        keypressed = 0
         pressed_keys = pygame.key.get_pressed()            
         if pressed_keys[K_s]:
             self.slide()
@@ -47,35 +51,43 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
             if pressed_keys[K_q]:
                 self.acc.x = -BaseWindow().ACC
                 self.direction = -1
+                keypressed = 1
             if pressed_keys[K_d]:
                 self.acc.x = BaseWindow().ACC
                 self.direction = 1
+                keypressed = -1
              
         self.acc.x += self.vel.x * self.fric
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
-         
+        
+        
         if self.pos.x > BaseWindow().wid:
             self.pos.x = 0
         if self.pos.x < 0:
             self.pos.x = BaseWindow().wid
             
         self.rect.midbottom = self.pos
-        self.fric = BaseWindow().FRIC
-
-    def update(self):
         
-        hits = pygame.sprite.spritecollide(P1 ,platforms, False)
-        if P1.vel.y > 0:        
-            if hits:
+        hits = pygame.sprite.spritecollide(P1 ,platforms, False)       
+        if hits:
+            print(hits[0].rect.top - P1.rect.bottom)
+            if hits[0].rect.top - P1.rect.bottom > -20:
                 self.vel.y = 0
-                
                 self.pos.y = hits[0].rect.top +1
-                if len(hits) > 1:
-                    if hits[1].rect.right - P1.pos[0] > 0 :
-                        self.vel.x = 0
-                    
-                        self.pos.x = hits[1].rect.right +1
+            else:
+                self.acc = lastacc
+                self.vel = lastvel
+                self.pos.x = lastpos
+                self.rect.midbottom = self.pos
+        if len(hits)>1:
+            
+            self.acc = lastacc
+            self.vel = lastvel
+            self.pos.x = lastpos
+            self.rect.midbottom = self.pos
+        self.fric = BaseWindow().FRIC
+                
             
 
     def jump(self):
@@ -263,7 +275,7 @@ def play(gameDisplay):
 #######################################################
 
 PT1 = Platform(BaseWindow().wid, 20,BaseWindow().wid/2, BaseWindow().hei - 100)
-PT2 = Platform(60, 500,500,500)
+PT2 = Platform(60, 500,500,400)
 P1 = Player()
 AXE = Axe(P1.pos)
 
