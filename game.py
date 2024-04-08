@@ -10,8 +10,8 @@ pygame.init()
 class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self) -> None:
         super().__init__()
-        self.wid = 1920
-        self.hei = 1080
+        self.wid = 1020
+        self.hei = 580
         self.fps = 160
         self.ACC = 1
         self.FRIC = -0.14
@@ -21,7 +21,7 @@ class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
 class Player(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self):
         super().__init__()
-        self.img = pygame.transform.scale(pygame.image.load(r'pik.png'), (80, 80))
+        self.img = pygame.transform.scale(pygame.image.load('img/pik.png'), (80, 80))
         self.speed = 1
         self.life = 100
         self.atk = 10
@@ -72,10 +72,10 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
                 
                 self.pos.y = hits[0].rect.top +1
                 if len(hits) > 1:
-                    if hits[1].rect.left - P1.pos[0] > 0 :
+                    if hits[1].rect.right - P1.pos[0] > 0 :
                         self.vel.x = 0
                     
-                        self.pos.x = hits[1].rect.left +1
+                        self.pos.x = hits[1].rect.right +1
             
 
     def jump(self):
@@ -103,7 +103,7 @@ class Axe(pygame.sprite.Sprite):
         self.surf = pygame.Surface((60,30))
         self.surf.fill((0,0,0))
         self.rect = self.surf.get_rect()
-        self.img = pygame.transform.scale(pygame.image.load(r'pik.png'), (60, 30))
+        self.img = pygame.transform.scale(pygame.image.load('img/pik.png'), (60, 30))
 
         self.pos = Playerpos
 
@@ -115,7 +115,7 @@ class Snowball(pygame.sprite.Sprite):
         
         self.surf = pygame.Surface((20,20))
         self.rect = self.surf.get_rect()
-        self.img = pygame.transform.scale(pygame.image.load(r'snowball.png'), (20, 20))
+        self.img = pygame.transform.scale(pygame.image.load('img/snowball.png'), (20, 20))
 
         self.rect.midbottom = P1.rect.midbottom
 
@@ -144,7 +144,7 @@ class Platform(pygame.sprite.Sprite): # PAS TOUCHE
  
 def setup_imgs(window_width, window_height):
     # background image
-    background = pygame.transform.scale(pygame.image.load(r'bg2.jpg'), (window_width, window_height))
+    background = pygame.transform.scale(pygame.image.load('img/bg2.jpg'), (window_width, window_height))
 
     return background
 
@@ -262,8 +262,8 @@ def play(gameDisplay):
         
 #######################################################
 
-PT1 = Platform(BaseWindow().wid - 500, 20,BaseWindow().wid/2, BaseWindow().hei - 100)
-PT2 = Platform(60, 500,500,800)
+PT1 = Platform(BaseWindow().wid, 20,BaseWindow().wid/2, BaseWindow().hei - 100)
+PT2 = Platform(60, 500,500,500)
 P1 = Player()
 AXE = Axe(P1.pos)
 
