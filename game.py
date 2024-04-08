@@ -110,12 +110,17 @@ class snowball:
         self.rect.center = self.pos
 
 class Niveau(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, gameDisplay):
         super().__init__()
         self.coords = open("level0_data.csv", "r", encoding='utf-8')
         self.length = 0
         self.tab = []
         self.tab_area = []
+        self.image = pygame.transform.scale(pygame.image.load(r'sol.jpg'), (100, 100))
+        self.gameDisplay = gameDisplay
+        self.flip =  False
+        self.rect = self.image.get_rect()
+        
         
         for x in open("level0_data.csv"):
             self.length += 1
@@ -123,13 +128,16 @@ class Niveau(pygame.sprite.Sprite):
 
             self.tab.append(y)
 
-    def Level(self):
         for i in range(self.length):
             for j in range(30):
                 if self.tab[i][j] == "0":
-                    self.tab_area.append([i, j])
-                    self.tab_area
-        return self.tab_area
+                    self.gameDisplay.blit(self.image, (500,500))
+                    print("a")
+
+    def draw(self):
+        self.gameDisplay.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+
+                    
 
 class platform(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self):
@@ -166,6 +174,9 @@ def play(gameDisplay, playerIMG):
     sliding = False
     running = True
     s = []
+
+    
+    n = Niveau(gameDisplay)
 
     while running:
 
@@ -206,15 +217,13 @@ def play(gameDisplay, playerIMG):
                 playerIMG = pygame.transform.rotate(playerIMG, 90)
                 sliding = False
 
-                
-
-        gameDisplay.fill((0,0,0))
         P1.move()
         P1.update()
-
-        gameDisplay.blit(bg, (0, 0))
+        
         gameDisplay.blit(playerIMG, P1.rect)
         gameDisplay.blit(PT1.surf, PT1.rect)
+        n.draw()
+
         for entity in s:
 
             gameDisplay.blit(snowballimg, entity.rect)
@@ -235,11 +244,11 @@ all_sprites.add(P1)
 platforms = pygame.sprite.Group()
 platforms.add(PT1)
 
-p = Niveau().Level()
-print(p)
-
 bg, playerIMG, snowballimg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
+
+gameDisplay.blit(bg, (0, 0))
+
 play(gameDisplay, playerIMG)
 
 pygame.quit()
