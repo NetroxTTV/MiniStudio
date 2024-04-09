@@ -119,7 +119,8 @@ class Niveau(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(pygame.image.load(r'sol.jpg'), (100, 100))
         self.gameDisplay = gameDisplay
         self.flip =  False
-        self.rect = self.image.get_rect()
+        self.rect = []
+        
         
         
         for x in open("level0_data.csv"):
@@ -132,10 +133,13 @@ class Niveau(pygame.sprite.Sprite):
             for j in range(30):
                 if self.tab[i][j] == "0":
                     self.gameDisplay.blit(self.image, (500,500))
-                    print("a")
+                    self.rect.append((j*100,i*65))
+                    print(j*32, " ", i*32)
+
 
     def draw(self):
-        self.gameDisplay.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        for i in range(len(self.rect)):
+            self.gameDisplay.blit(pygame.transform.flip(self.image, self.flip, False), self.rect[i])
 
                     
 
