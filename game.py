@@ -31,7 +31,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.rect = self.surf.get_rect()
 
         self.direction = 1
-        self.pos = BaseWindow().vec(450,BaseWindow().hei//2)
+        self.pos = BaseWindow().vec(250,BaseWindow().hei//2)
         self.vel = BaseWindow().vec(0,0)
         self.acc = BaseWindow().vec(0,0)
 
@@ -60,8 +60,9 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
 
-        self.rect.midbottom = self.pos
         
+        self.rect.midbottom = self.pos
+        self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
             if hits[0].rect.top - P1.rect.bottom > -20:
@@ -72,12 +73,16 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
                 self.vel = lastvel
                 self.pos.x = lastpos
                 self.rect.midbottom = self.pos
+                self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
         if len(hits)>1:
             
             self.acc = lastacc
             self.vel = lastvel
             self.pos.x = lastpos
             self.rect.midbottom = self.pos
+            self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
+
+        
         self.fric = BaseWindow().FRIC
 
     def jump(self):
@@ -180,7 +185,7 @@ def play(gameDisplay):
     snowballs = []
 
     while running:
-        camera_offset_x = BaseWindow().wid // 2 - P1.pos.x - BaseWindow().wid // 2
+        camera_offset_x = BaseWindow().wid // 4 - P1.pos.x - 25
         
         for event in pygame.event.get():
 
@@ -241,7 +246,7 @@ def play(gameDisplay):
         gameDisplay.fill((0,0,0))
         gameDisplay.blit(bg, (0, 0))
 
-        player_rect = pygame.Rect(P1.pos.x - camera_offset_x, P1.pos.y -100, 100, 100)
+        player_rect = pygame.Rect(P1.pos.x + camera_offset_x - 30, P1.pos.y - 80, 50, 80)
         gameDisplay.blit(P1.surf, P1.rect)
         gameDisplay.blit(P1.img, player_rect)
         gameDisplay.blit(PT1.surf, PT1.rect)
