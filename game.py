@@ -110,20 +110,20 @@ class snowball:
         self.rect.center = self.pos
 
 class Niveau(pygame.sprite.Sprite):
-    def __init__(self, gameDisplay):
+    def __init__(self, gameDisplay,niv:str):
         super().__init__()
-        self.coords = open("level0_data.csv", "r", encoding='utf-8')
+        self.coords = open(f"{niv}.csv", "r", encoding='utf-8')
         self.length = 0
         self.tab = []
         self.tab_area = []
-        self.image = pygame.transform.scale(pygame.image.load(r'sol.jpg'), (100, 100))
+        self.image = pygame.transform.scale(pygame.image.load(r'sol.jpg'), (68, 68))
         self.gameDisplay = gameDisplay
         self.flip =  False
         self.rect = []
         
         
         
-        for x in open("level0_data.csv"):
+        for x in open(f"{niv}.csv"):
             self.length += 1
             y = x.split(",")
 
@@ -133,8 +133,7 @@ class Niveau(pygame.sprite.Sprite):
             for j in range(30):
                 if self.tab[i][j] == "0":
                     self.gameDisplay.blit(self.image, (500,500))
-                    self.rect.append((j*100,i*65))
-                    print(j*32, " ", i*32)
+                    self.rect.append((j*68,i*68))
 
 
     def draw(self):
@@ -180,7 +179,7 @@ def play(gameDisplay, playerIMG):
     s = []
 
     
-    n = Niveau(gameDisplay)
+    n = Niveau(gameDisplay, "niv2")
 
     while running:
 
@@ -217,7 +216,7 @@ def play(gameDisplay, playerIMG):
                     sliding = True
                     P1.dash()
             now = pygame.time.get_ticks()
-            if now - lastdash >= (cooldowndash //30)  and sliding:
+            if now - lastdash >= (cooldowndash //30)  and sliding:  
                 playerIMG = pygame.transform.rotate(playerIMG, 90)
                 sliding = False
 
