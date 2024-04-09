@@ -31,47 +31,39 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.rect = self.surf.get_rect()
 
         self.direction = 1
-        self.pos = BaseWindow().vec((0, 0))
+        self.pos = BaseWindow().vec(450,BaseWindow().hei//2)
         self.vel = BaseWindow().vec(0,0)
         self.acc = BaseWindow().vec(0,0)
 
         self.fric = BaseWindow().FRIC
 
-    def move(self):
+    def move(self , camera_offset_x):
         lastacc = self.acc
         lastvel = self.vel
         lastpos = self.pos.x
         self.acc = BaseWindow().vec(0,0.5)
-        
-        keypressed = 0
-        pressed_keys = pygame.key.get_pressed()            
+
+        pressed_keys = pygame.key.get_pressed()  
         if pressed_keys[K_s]:
             self.slide()
         else:
             if pressed_keys[K_q]:
                 self.acc.x = -BaseWindow().ACC
                 self.direction = -1
-                keypressed = 1
+               
             if pressed_keys[K_d]:
                 self.acc.x = BaseWindow().ACC
                 self.direction = 1
-                keypressed = -1
+                
              
         self.acc.x += self.vel.x * self.fric
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
-        
-        
-        if self.pos.x > BaseWindow().wid:
-            self.pos.x = 0
-        if self.pos.x < 0:
-            self.pos.x = BaseWindow().wid
-            
+
         self.rect.midbottom = self.pos
         
-        hits = pygame.sprite.spritecollide(P1 ,platforms, False)       
+        hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
-            print(hits[0].rect.top - P1.rect.bottom)
             if hits[0].rect.top - P1.rect.bottom > -20:
                 self.vel.y = 0
                 self.pos.y = hits[0].rect.top +1
@@ -87,8 +79,6 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
             self.pos.x = lastpos
             self.rect.midbottom = self.pos
         self.fric = BaseWindow().FRIC
-                
-            
 
     def jump(self):
         hits = pygame.sprite.spritecollide(self, platforms, False)
@@ -96,7 +86,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
             self.vel.y = -15
     
     def dash(self):
-        hits = pygame.sprite.spritecollide(P1 ,platforms, False)
+        hits = pygame.sprite.spritecollide(self ,platforms, False)
         if hits:
             self.img = pygame.transform.rotate(self.img, -90)
             self.vel.x += 30 * (1 if self.vel.x >= -0.01 else -1)
@@ -152,7 +142,11 @@ class Platform(pygame.sprite.Sprite): # PAS TOUCHE
         super().__init__()
         self.surf = pygame.Surface((w,h))
         self.surf.fill((100,100,100))
-        self.rect = self.surf.get_rect(center = (x,y))
+        self.x = x
+        self.y = y
+        self.rect = self.surf.get_rect(center = (self.x, self.y))
+    def move(self,camera_offset_x):
+        self.rect = self.surf.get_rect(center = (self.x + camera_offset_x, self.y))
  
 def setup_imgs(window_width, window_height):
     # background image
@@ -186,7 +180,7 @@ def play(gameDisplay):
     snowballs = []
 
     while running:
-        
+        camera_offset_x = BaseWindow().wid // 2 - P1.pos.x - BaseWindow().wid // 2
         
         for event in pygame.event.get():
 
@@ -203,20 +197,9 @@ def play(gameDisplay):
 
             
             if pygame.mouse.get_pressed()[2]:
-                ChargeStart += 10
-                print(ChargeStart)
-            if not(pygame.mouse.get_pressed()[2]):
-                if ChargeStart >= 600 and not(AxeBaseActive):
-                    now = pygame.time.get_ticks()
-                    lastaxe = now
-                    AxeBaseActive = True
-
-                elif ChargeStart >= 60 and not(AxeBaseActive):
-                    now = pygame.time.get_ticks()
-                    lastaxe = now
-                    AxeBaseActive = True
-
-                ChargeStart = 0
+                now = pygame.time.get_ticks()
+                lastaxe = now
+                AxeBaseActive = True
                 
             
 #######################################################
@@ -250,17 +233,21 @@ def play(gameDisplay):
             AXE.rect.center = P1.rect.center + BaseWindow().vec((50*P1.direction,15))
 
         
-        P1.move()
-        P1.update()
+        P1.move(camera_offset_x)
+        PT1.move(camera_offset_x)
+        PT2.move(camera_offset_x)
+        PT3.move(camera_offset_x)
         
-
         gameDisplay.fill((0,0,0))
         gameDisplay.blit(bg, (0, 0))
 
+        player_rect = pygame.Rect(P1.pos.x - camera_offset_x, P1.pos.y -100, 100, 100)
         gameDisplay.blit(P1.surf, P1.rect)
-        gameDisplay.blit(P1.img, P1.rect)
+        gameDisplay.blit(P1.img, player_rect)
         gameDisplay.blit(PT1.surf, PT1.rect)
         gameDisplay.blit(PT2.surf, PT2.rect)
+        gameDisplay.blit(PT3.surf, PT3.rect)
+        
 
         if AxeBaseActive:
             gameDisplay.blit(AXE.surf, AXE.rect)
@@ -274,8 +261,9 @@ def play(gameDisplay):
         
 #######################################################
 
-PT1 = Platform(BaseWindow().wid, 20,BaseWindow().wid/2, BaseWindow().hei - 100)
-PT2 = Platform(60, 500,500,400)
+PT1 = Platform(BaseWindow().wid * 5, 20,BaseWindow().wid/2, BaseWindow().hei - 100)
+PT2 = Platform(60, 500,300,500)
+PT3 = Platform(60, 500,1200,200)
 P1 = Player()
 AXE = Axe(P1.pos)
 
@@ -283,6 +271,7 @@ AXE = Axe(P1.pos)
 all_sprites = pygame.sprite.Group()
 all_sprites.add(PT1)
 all_sprites.add(PT2)
+all_sprites.add(PT3)
 all_sprites.add(P1)
 all_sprites.add(AXE)
 
@@ -290,17 +279,15 @@ all_sprites.add(AXE)
 platforms = pygame.sprite.Group()
 platforms.add(PT1)
 platforms.add(PT2)
+platforms.add(PT3)
 
 AtksP = pygame.sprite.Group()
 AtksP.add(AXE)
 
-
 AtksE = pygame.sprite.Group()
-
 
 bg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
-
 
 play(gameDisplay)
 
