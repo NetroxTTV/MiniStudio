@@ -176,7 +176,8 @@ def play(gameDisplay, playerIMG):
     cooldowndash = 1000 #ms
     sliding = False
     running = True
-    s = []
+    s = [] 
+    a = 0
 
     
     n = Niveau(gameDisplay, "niv2")
