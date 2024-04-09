@@ -20,62 +20,87 @@ class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
 
 class Player(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self):
-        super().__init__() 
+        super().__init__()
+        self.img = pygame.transform.scale(pygame.image.load('pik.png'), (50, 60))
         self.speed = 1
         self.life = 100
         self.atk = 10
         
-        self.surf = pygame.Surface((80, 80))
+        self.surf = pygame.Surface((50, 60))
+        self.surf.fill((255,0,0))
         self.rect = self.surf.get_rect()
-   
-        self.pos = BaseWindow().vec((1920/2, 1080/2))
+
+        self.direction = 1
+        self.pos = BaseWindow().vec(250,BaseWindow().hei//2)
         self.vel = BaseWindow().vec(0,0)
         self.acc = BaseWindow().vec(0,0)
 
         self.fric = BaseWindow().FRIC
 
-    def move(self):
+    def move(self , camera_offset_x):
+        lastacc = self.acc
+        lastvel = self.vel
+        lastpos = self.pos.x
         self.acc = BaseWindow().vec(0,0.5)
-    
-        pressed_keys = pygame.key.get_pressed()            
+
+        pressed_keys = pygame.key.get_pressed()  
         if pressed_keys[K_s]:
             self.slide()
         else:
             if pressed_keys[K_q]:
                 self.acc.x = -BaseWindow().ACC
-                self.direction = 0
+                self.direction = -1
+               
             if pressed_keys[K_d]:
                 self.acc.x = BaseWindow().ACC
                 self.direction = 1
+                
              
         self.acc.x += self.vel.x * self.fric
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
-         
-        if self.pos.x > BaseWindow().wid:
-            self.pos.x = 0
-        if self.pos.x < 0:
-            self.pos.x = BaseWindow().wid
-            
+
+        
         self.rect.midbottom = self.pos
+        self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
+        hits = pygame.sprite.spritecollide(self, platforms, False)
+        if hits:
+            if hits[0].rect.top - P1.rect.bottom > -20:
+                self.vel.y = 0
+                self.pos.y = hits[0].rect.top +1
+            else:
+                self.acc = lastacc
+                self.vel = lastvel
+                self.pos.x = lastpos
+                self.rect.midbottom = self.pos
+                self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
+        if len(hits)>1:
+            if hits[1].rect.top - P1.rect.bottom < -20:
+                self.acc = lastacc
+                self.vel = lastvel
+                self.pos.x = lastpos
+                self.rect.midbottom = self.pos
+                self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
+                if len(hits)>2:
+                    self.vel.y = 0
+                    self.pos.y = hits[0].rect.top +1
+        
+
+        
         self.fric = BaseWindow().FRIC
 
-    def update(self):
-        hits = pygame.sprite.spritecollide(P1 ,platforms, False)
-        if P1.vel.y > 0:        
-            if hits:
-                self.vel.y = 0
-                self.pos.y = hits[0].rect.top + 1
-    	
     def jump(self):
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
             self.vel.y = -15
     
     def dash(self):
-        hits = pygame.sprite.spritecollide(P1 ,platforms, False)
+        hits = pygame.sprite.spritecollide(self ,platforms, False)
         if hits:
+            self.img = pygame.transform.rotate(self.img, -90)
             self.vel.x += 30 * (1 if self.vel.x >= -0.01 else -1)
+            return True
+        return False
     
     def slide(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
@@ -116,12 +141,10 @@ class Niveau(pygame.sprite.Sprite):
         self.length = 0
         self.tab = []
         self.tab_area = []
-        self.image = pygame.transform.scale(pygame.image.load(r'sol.jpg'), (68, 68))
+        self.image = pygame.transform.scale(pygame.image.load(r'sol.jpg'), (69, 69))
         self.gameDisplay = gameDisplay
         self.flip =  False
-        self.rect = []
-        
-        
+        self.rects = []
         
         for x in open(f"{niv}.csv"):
             self.length += 1
@@ -133,28 +156,35 @@ class Niveau(pygame.sprite.Sprite):
             for j in range(30):
                 if self.tab[i][j] == "0":
                     self.gameDisplay.blit(self.image, (500,500))
-                    self.rect.append((j*68,i*68))
+                    rect = Platform(67,67, j*69, i*69)
+                    platforms.add(rect)
+                    self.rects.append(rect)
 
 
-    def draw(self):
-        for i in range(len(self.rect)):
-            self.gameDisplay.blit(pygame.transform.flip(self.image, self.flip, False), self.rect[i])
+    def draw(self, camera_offset_x):
+        for entity in self.rects:
+            entity.move(camera_offset_x)
+            self.gameDisplay.blit(pygame.transform.flip(self.image, self.flip, False), entity.rect.topleft)
 
                     
-
-class platform(pygame.sprite.Sprite): # PAS TOUCHE
-    def __init__(self):
+class Platform(pygame.sprite.Sprite): # PAS TOUCHE
+    def __init__(self,  w,h,x, y):
         super().__init__()
-        self.surf = pygame.Surface((BaseWindow().wid, 20))
-        self.surf.fill((100,100,100))
-        self.rect = self.surf.get_rect(center = (BaseWindow().wid/2, BaseWindow().hei - 10))
+        self.surf = pygame.Surface((w,h))
+        self.x = x
+        self.y = y
+        self.rect = self.surf.get_rect(topleft = (self.x, self.y))
+    def move(self,camera_offset_x):
+        self.rect = self.surf.get_rect(topleft = (self.x + camera_offset_x, self.y))
+    
+
  
 def setup_imgs(window_width, window_height):
     # background image
     background = pygame.transform.scale(pygame.image.load(r'bg2.jpg'), (window_width, window_height))
 
     # player image + rotate
-    img = pygame.transform.scale(pygame.image.load(r'pik.png'), (80, 80))
+    img = pygame.transform.scale(pygame.image.load(r'pik.png'), (50, 60))
     playerI = pygame.transform.rotate(img, 0)
 
     # snowball image
@@ -178,11 +208,12 @@ def play(gameDisplay, playerIMG):
     running = True
     s = [] 
     a = 0
-
     
     n = Niveau(gameDisplay, "niv2")
 
     while running:
+        
+        camera_offset_x = BaseWindow().wid // 8 - P1.pos.x - 25
 
         gameDisplay.fill((0, 0, 0))
         gameDisplay.blit(bg, (0, 0))
@@ -221,12 +252,12 @@ def play(gameDisplay, playerIMG):
                 playerIMG = pygame.transform.rotate(playerIMG, 90)
                 sliding = False
 
-        P1.move()
-        P1.update()
+        P1.move(camera_offset_x)
         
+        
+        gameDisplay.blit(P1.surf, P1.rect)
         gameDisplay.blit(playerIMG, P1.rect)
-        gameDisplay.blit(PT1.surf, PT1.rect)
-        n.draw()
+        n.draw(camera_offset_x)
 
         for entity in s:
 
@@ -238,15 +269,14 @@ def play(gameDisplay, playerIMG):
 
     #####################
 
-PT1 = platform()
+
 P1 = Player()
 
 all_sprites = pygame.sprite.Group()
-all_sprites.add(PT1)
 all_sprites.add(P1)
 
 platforms = pygame.sprite.Group()
-platforms.add(PT1)
+
 
 bg, playerIMG, snowballimg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
