@@ -10,8 +10,8 @@ pygame.init()
 class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self) -> None:
         super().__init__()
-        self.wid = 1920
-        self.hei = 1080
+        self.wid = 1520
+        self.hei = 980
         self.fps = 120
         self.ACC = 1
         self.FRIC = -0.14
@@ -64,6 +64,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.rect.midbottom = self.pos
         self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
         hits = pygame.sprite.spritecollide(self, platforms, False)
+        print(len(hits))
         if hits:
             if hits[0].rect.top - P1.rect.bottom > -20:
                 self.vel.y = 0
@@ -141,7 +142,7 @@ class Niveau(pygame.sprite.Sprite):
         self.length = 0
         self.tab = []
         self.tab_area = []
-        self.image = pygame.transform.scale(pygame.image.load(r'sol.jpg'), (69, 69))
+        self.image = pygame.transform.scale(pygame.image.load(r'sol.jpg'), (68, 68))
         self.gameDisplay = gameDisplay
         self.flip =  False
         self.rects = []
@@ -156,7 +157,7 @@ class Niveau(pygame.sprite.Sprite):
             for j in range(30):
                 if self.tab[i][j] == "0":
                     self.gameDisplay.blit(self.image, (500,500))
-                    rect = Platform(67,67, j*69, i*69)
+                    rect = Platform(68,68, j*68, i*68)
                     platforms.add(rect)
                     self.rects.append(rect)
 
