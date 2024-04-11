@@ -18,15 +18,35 @@ class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
         self.FramePerSec = pygame.time.Clock()
         self.vec = pygame.math.Vector2 
 
+
+class spritesheet(object):
+    def __init__(self, filename):
+        self.sheet = pygame.image.load(filename).convert()
+    # Load a specific image from a specific rectangle
+    def image_at(self, rectangle, colorkey = None):
+        "Loads image from x,y,x+offset,y+offset"
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(self.sheet, (0, 0), rect)
+        if colorkey is not None:
+            if colorkey is -1:
+                colorkey = image.get_at((0,0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        return image
+    # Load a whole bunch of images and return them as a list
+    def images_at(self, rects, colorkey = None):
+        "Loads multiple images, supply a list of coordinates" 
+        return [self.image_at(rect, colorkey) for rect in rects]
+
+
 class Player(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self):
         super().__init__()
-        self.img = pygame.transform.scale(pygame.image.load('img/pik.png'), (80, 80))
         self.speed = 1
         self.life = 100
         self.atk = 10
         
-        self.surf = pygame.Surface((50, 80))
+        self.surf = pygame.Surface((100, 130))
         self.surf.fill((255,0,0))
         self.rect = self.surf.get_rect()
 
@@ -37,6 +57,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
 
         self.fric = BaseWindow().FRIC
 
+        self.flip = False
     def move(self , camera_offset_x):
         lastacc = self.acc
         lastvel = self.vel
@@ -50,10 +71,12 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
             if pressed_keys[K_q]:
                 self.acc.x = -BaseWindow().ACC
                 self.direction = -1
+                self.flip = True
                
             if pressed_keys[K_d]:
                 self.acc.x = BaseWindow().ACC
                 self.direction = 1
+                self.flip = False
                 
              
         self.acc.x += self.vel.x * self.fric
@@ -177,7 +200,9 @@ def play(gameDisplay):
     lastaxe = startCD
     cooldownaxe = 1000#ms
     ChargeStart = 0
-
+    
+    nowframe = 0
+    lastframe = startCD
 
     AxeBaseActive = False
     sliding = False
@@ -248,7 +273,28 @@ def play(gameDisplay):
 
         player_rect = pygame.Rect(P1.pos.x + camera_offset_x - 30, P1.pos.y - 80, 50, 80)
         gameDisplay.blit(P1.surf, P1.rect)
-        gameDisplay.blit(P1.img, player_rect)
+        if P1.vel.x > 0.1 or P1.vel.x < -0.1:
+            if now - lastframe >= 100:
+                lastframe = now
+                nowframe += 1
+            frame = running_stance[nowframe]
+            if nowframe > len(running_stance) - 2:
+                    nowframe = 0
+            image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
+        else:
+            if now - lastframe > 100:
+                lastframe = now
+                nowframe += 1
+            frame = base_stance[nowframe]
+            if nowframe > len(base_stance) - 2:
+                    nowframe = 0
+                    
+        image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
+        image = pygame.transform.flip(image, P1.flip, False)
+        image_rect = (P1.rect[0] - image.get_width()/8,P1.rect[1],image.get_width(),image.get_height())
+        
+        gameDisplay.blit(image,image_rect)
+        
         gameDisplay.blit(PT1.surf, PT1.rect)
         gameDisplay.blit(PT2.surf, PT2.rect)
         gameDisplay.blit(PT3.surf, PT3.rect)
@@ -294,6 +340,11 @@ AtksE = pygame.sprite.Group()
 bg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
 
+ss= spritesheet('ANIMATIONS_SPRITESHEET.png')
+# Sprite is 16x16 pixels at location 0,0 in the file...
+base_stance = []
+base_stance = ss.images_at([(0,62,351,269),(352,62,351,269),(704,62,351,269),(1056,62,351,269),(1408,62,351,269),(0,332,351,269),(352,62,351,269),(704,62,351,269),(1056,62,351,269),(1408,62,351,269),(0,602,351,269),(352,602,351,269)],colorkey=(0,255,0))
+running_stance = ss.images_at([(0,1412,351,269),(352,1412,351,269),(704,1412,351,269),(1056,1412,351,269),(1408,1412,351,269),(0,1682,351,269),(352,1682,351,269),(704,1682,351,269),(1056,1682,351,269),(1408,1682,351,269)],colorkey=(0,255,0))
 play(gameDisplay)
 
 pygame.quit()
