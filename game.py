@@ -192,7 +192,7 @@ class Niveau(pygame.sprite.Sprite):
 
         for i in range(self.length):
             for j in range(80):
-                if self.tab[i][j] == "0" or self.tab[i][j] == "1" or self.tab[i][j] == "2" or self.tab[i][j] == "3" or self.tab[i][j] == "4" or self.tab[i][j] == "5" or self.tab[i][j] == "6" or self.tab[i][j] == "7" or self.tab[i][j] == "8":
+                if self.tab[i][j] == "0" or self.tab[i][j] == "1" or self.tab[i][j] == "2" or self.tab[i][j] == "3" or self.tab[i][j] == "4" or self.tab[i][j] == "5" or self.tab[i][j] == "6" or self.tab[i][j] == "7" or self.tab[i][j] == "8" or self.tab[i][j] == "9":
                     self.image = pygame.transform.scale(pygame.image.load(rf'IMAGES/img/tile/{self.tab[i][j]}.png'), (68, 68))
                     self.gameDisplay.blit(self.image, (500,500))
                     self.images.append(self.image)
