@@ -129,16 +129,6 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
             self.pos = BaseWindow().vec(250,BaseWindow().hei//2)
 
     def check_end(self):
-
-        button_1_image = pygame.image.load('Fichier 12.png')
-        button_1_image = pygame.transform.scale(button_1_image, (200, 50))
-        outline_image = pygame.image.load('Fichier 2.png')  
-        outline_image = pygame.transform.scale(outline_image, (50, 60))  
-        outline_image_flipped = pygame.transform.flip(outline_image, True, False)
-
-        mx, my = pygame.mouse.get_pos()
-        click = False
-        button = pygame.Rect(BaseWindow().wid//2, BaseWindow().hei//2, 200, 50)
         if self.pos.x >= 5127:
             pygame.quit()
             sys.exit()
@@ -150,7 +140,7 @@ class Axe(pygame.sprite.Sprite):
         self.surf = pygame.Surface((60,30))
         self.surf.fill((0,0,0))
         self.rect = self.surf.get_rect()
-        self.img = pygame.transform.scale(pygame.image.load('pik.png'), (60, 30))
+        self.img = pygame.transform.scale(pygame.image.load('IMAGES/img/pik.png'), (60, 30))
 
         self.pos = Playerpos
         
@@ -162,7 +152,7 @@ class Snowball(pygame.sprite.Sprite):
         
         self.surf = pygame.Surface((20,20))
         self.rect = self.surf.get_rect()
-        self.img = pygame.transform.scale(pygame.image.load('snowball.png'), (20, 20))
+        self.img = pygame.transform.scale(pygame.image.load('IMAGES/img/snowball.png'), (20, 20))
 
         self.rect.midbottom = P1.rect.midbottom
 
@@ -185,7 +175,7 @@ class Snowball(pygame.sprite.Sprite):
 class Niveau(pygame.sprite.Sprite):
     def __init__(self, gameDisplay,niv:str):
         super().__init__()
-        self.coords = open(f"niveau/{niv}.csv", "r", encoding='utf-8')
+        self.coords = open(f"IMAGES/niveau/{niv}.csv", "r", encoding='utf-8')
         self.length = 0
         self.tab = []
         self.tab_area = []
@@ -194,7 +184,7 @@ class Niveau(pygame.sprite.Sprite):
         self.rects = []
         self.images = []
         
-        for x in open(f"niveau/{niv}.csv"):
+        for x in open(f"IMAGES/niveau/{niv}.csv"):
             self.length += 1
             y = x.split(",")
 
@@ -203,7 +193,7 @@ class Niveau(pygame.sprite.Sprite):
         for i in range(self.length):
             for j in range(80):
                 if self.tab[i][j] == "0" or self.tab[i][j] == "1" or self.tab[i][j] == "2" or self.tab[i][j] == "3" or self.tab[i][j] == "4" or self.tab[i][j] == "5" or self.tab[i][j] == "6" or self.tab[i][j] == "7" or self.tab[i][j] == "8":
-                    self.image = pygame.transform.scale(pygame.image.load(rf'img/tile/{self.tab[i][j]}.png'), (68, 68))
+                    self.image = pygame.transform.scale(pygame.image.load(rf'IMAGES/img/tile/{self.tab[i][j]}.png'), (68, 68))
                     self.gameDisplay.blit(self.image, (500,500))
                     self.images.append(self.image)
                     rect = Platform(68,68, j*68, i*68)
@@ -338,7 +328,6 @@ def play(gameDisplay, niv):
 #######################################################
 
 def Start_file(niv):
-    print(niv, "aaaa")
     global gameDisplay
     global bg
     global P1 
@@ -356,9 +345,9 @@ def Start_file(niv):
     all_sprites = pygame.sprite.Group()
     all_sprites.add(P1)
     platforms = pygame.sprite.Group()
-    bg = pygame.transform.scale(pygame.image.load(r'img/background.png').convert_alpha(), (BaseWindow().wid, BaseWindow().hei))
+    bg = pygame.transform.scale(pygame.image.load(r'IMAGES/img/background.png').convert_alpha(), (BaseWindow().wid, BaseWindow().hei))
 
-    ss= spritesheet('ANIMATIONS_SPRITESHEET.png')
+    ss= spritesheet('IMAGES/animation/ANIMATIONS_SPRITESHEET.png')
     
     base_stance = []
     running_stance = []

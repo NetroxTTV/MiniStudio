@@ -11,19 +11,19 @@ screen = pygame.display.set_mode((500, 500), 0, 32)
 
 font = pygame.font.SysFont(None, 20)
 
-button_1_image = pygame.image.load('Fichier 12.png')
+button_1_image = pygame.image.load('IMAGES/menu/Fichier 12.png')
 button_1_image = pygame.transform.scale(button_1_image, (200, 50))
-button_2_image = pygame.image.load('Fichier 12.png')
+button_2_image = pygame.image.load('IMAGES/menu/Fichier 12.png')
 button_2_image = pygame.transform.scale(button_2_image, (200, 50))
-button_3_image = pygame.image.load('Fichier 12.png')
+button_3_image = pygame.image.load('IMAGES/menu/Fichier 12.png')
 button_3_image = pygame.transform.scale(button_3_image, (200, 50))
-button_4_image = pygame.image.load('Fichier 14.png')
+button_4_image = pygame.image.load('IMAGES/menu/Fichier 14.png')
 button_4_image = pygame.transform.scale(button_4_image, (200, 50))
-outline_image = pygame.image.load('Fichier 2.png')  
+outline_image = pygame.image.load('IMAGES/menu/Fichier 2.png')  
 outline_image = pygame.transform.scale(outline_image, (50, 60))  
 outline_image_flipped = pygame.transform.flip(outline_image, True, False)
 
-font_path = 'font/Norse.otf'  
+font_path = 'IMAGES/font/Norse.otf'  
 font_size = 30 
 custom_font = pygame.font.Font(font_path, font_size)
 
@@ -91,11 +91,9 @@ def main_menu():
 
         if button_1.collidepoint((mx, my)):
             if click:
-                print("donne ton 06 stp")
                 level_select()
         if button_2.collidepoint((mx, my)):
             if click:
-                print("ethan ta mere je lance les options")
                 options()
 
         click = False
@@ -118,7 +116,7 @@ def main_menu():
 def level_select():
     running = True
 
-    map_image = pygame.image.load('Map_God_Ass_Kicker_Danemark.png')
+    map_image = pygame.image.load('IMAGES/menu/Map_God_Ass_Kicker_Danemark.png')
     map_image = pygame.transform.scale(map_image, (screen_width, screen_height))
     
     level_coords = [
@@ -207,11 +205,9 @@ def options():
         if button_3.collidepoint((mx, my)):
             if click:
                 toggle_sound()
-                print("ethan est beau je mute le son")
         if button_4.collidepoint((mx, my)):
             if click:
                 change_resolution()
-                print("ethan est moche je change de resol")
 
         click = False
         for event in pygame.event.get():
