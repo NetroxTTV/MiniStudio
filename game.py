@@ -13,10 +13,11 @@ class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
         self.wid = 1020
         self.hei = 580
         self.fps = 160
-        self.ACC = 1
+        self.ACC = 0.8
         self.FRIC = -0.14
         self.FramePerSec = pygame.time.Clock()
-        self.vec = pygame.math.Vector2 
+        self.vec = pygame.math.Vector2
+        
 
 
 class spritesheet(object):
@@ -56,7 +57,8 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.acc = BaseWindow().vec(0,0)
 
         self.fric = BaseWindow().FRIC
-
+        self.sliding = False
+        
         self.flip = False
     def move(self , camera_offset_x):
         lastacc = self.acc
@@ -68,6 +70,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         if pressed_keys[K_s]:
             self.slide()
         else:
+            self.sliding = False
             if pressed_keys[K_q]:
                 self.acc.x = -BaseWindow().ACC
                 self.direction = -1
@@ -113,18 +116,11 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         if hits:
             self.vel.y = -15
     
-    def dash(self):
-        hits = pygame.sprite.spritecollide(self ,platforms, False)
-        if hits:
-            self.img = pygame.transform.rotate(self.img, -90)
-            self.vel.x += 30 * (1 if self.vel.x >= -0.01 else -1)
-            return True
-        return False
-    
     def slide(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
         if hits:
-            self.fric = -0.009
+            self.fric = 0.01
+            self.sliding = True
 
 class Axe(pygame.sprite.Sprite):
     def __init__(self, Playerpos):
@@ -201,7 +197,6 @@ def play(gameDisplay):
     cooldownaxe = 1000#ms
     
     nowframe = 0
-    lastframe = startCD
 
     AxeBaseActive = False
     sliding = False
@@ -241,13 +236,6 @@ def play(gameDisplay):
             if keys[pygame.K_SPACE]:
                 P1.jump()
             
-            if keys[pygame.K_LSHIFT]:
-                now = pygame.time.get_ticks()
-                if now - lastdash >= cooldowndash and -10 < P1.vel.x < 10 and not(sliding):
-                    lastdash = now
-                    sliding = P1.dash()
-            
-
 #######################################################
 ################# GAME UPDATE/DISPLAY #################
 
@@ -267,16 +255,20 @@ def play(gameDisplay):
         gameDisplay.blit(bg, (0, 0))
 
         gameDisplay.blit(P1.surf, P1.rect)
-        
-        if P1.vel.x > 0.1 or P1.vel.x < -0.1:
+        if P1.sliding and (P1.vel.x > 0.1 or P1.vel.x < -0.1):
             nowframe += 0.1
+            if nowframe >= len(sliding_stance):
+                nowframe = 0
+            frame = sliding_stance[int(nowframe)]
+
+        elif P1.vel.x > 0.1 or P1.vel.x < -0.1:
+            nowframe += 0.12
             if nowframe >= len(running_stance):
                 nowframe = 0
             frame = running_stance[int(nowframe)]
             
-            image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
         else:
-            nowframe += 0.12
+            nowframe += 0.15
             if nowframe >= len(base_stance):
                 nowframe = 0
             frame = base_stance[int(nowframe)]
@@ -286,12 +278,13 @@ def play(gameDisplay):
         image = pygame.transform.flip(image, P1.flip, False)
         image_rect = (P1.rect[0] - image.get_width()/8 ,P1.rect[1],image.get_width(),image.get_height())
         
-        gameDisplay.blit(image,image_rect)
+        
         
         gameDisplay.blit(PT1.surf, PT1.rect)
         gameDisplay.blit(PT2.surf, PT2.rect)
         gameDisplay.blit(PT3.surf, PT3.rect)
         
+        gameDisplay.blit(image,image_rect)
 
         if AxeBaseActive:
             gameDisplay.blit(AXE.surf, AXE.rect)
@@ -339,6 +332,8 @@ base_stance = []
 running_stance = []
 base_stance = ss.images_at([(0,62,351,269),(352,62,351,269),(704,62,351,269),(1056,62,351,269),(1408,62,351,269),(0,332,351,269),(352,332,351,269),(704,332,351,269),(1056,332,351,269),(1408,332,351,269),(0,602,351,269),(352,602,351,269)],colorkey=(0,255,0))
 running_stance = ss.images_at([(0,1412,351,269),(352,1412,351,269),(704,1412,351,269),(1056,1412,351,269),(1408,1412,351,269),(0,1682,351,269),(352,1682,351,269),(704,1682,351,269),(1056,1682,351,269),(1408,1682,351,269)],colorkey=(0,255,0))
+sliding_stance = ss.images_at([(0,872,351,269),(352,872,351,269),(704,872,351,269),(1056,872,351,269),(1408,872,351,269),(0,1142,351,269),(352,1142,351,269),(704,1142,351,269)],colorkey=(0,255,0))
+
 play(gameDisplay)
 
 pygame.quit()
