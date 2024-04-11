@@ -177,7 +177,7 @@ class Niveau(pygame.sprite.Sprite):
             self.tab.append(y)
 
         for i in range(self.length):
-            for j in range(100):
+            for j in range(80):
                 if self.tab[i][j] == "0" or self.tab[i][j] == "1" or self.tab[i][j] == "2" or self.tab[i][j] == "3" or self.tab[i][j] == "4" or self.tab[i][j] == "5" or self.tab[i][j] == "6":
                     self.image = pygame.transform.scale(pygame.image.load(rf'img/tile/{self.tab[i][j]}.png'), (68, 68))
                     self.gameDisplay.blit(self.image, (500,500))
@@ -201,12 +201,6 @@ class Platform(pygame.sprite.Sprite): # PAS TOUCHE
         self.rect = self.surf.get_rect(topleft = (self.x, self.y))
     def move(self,camera_offset_x):
         self.rect = self.surf.get_rect(topleft = (self.x + camera_offset_x, self.y))
-
-def setup_imgs(window_width, window_height):
-    # background image
-    background = pygame.transform.scale(pygame.image.load(r'Fond_2eme_niveau.png').convert_alpha(), (window_width, window_height))
-
-    return background
 
 def gd(window_width, window_height): # PAS TOUCHE
     gd = pygame.display.set_mode((window_width,window_height))
@@ -303,20 +297,26 @@ def play(gameDisplay, niv):
 
 def Start_file(niv):
     print(niv, "aaaa")
+    global gameDisplay
+    global bg
+    global P1 
+    global AXE
+    global link
+    global platforms
+
+    gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
+    P1 = Player()
+    AXE = Axe(P1.pos)
+    link = pygame.sprite.GroupSingle(P1)
+    all_sprites = pygame.sprite.Group()
+    all_sprites.add(P1)
+    platforms = pygame.sprite.Group()
+    bg = pygame.transform.scale(pygame.image.load(r'img/background.png').convert_alpha(), (BaseWindow().wid, BaseWindow().hei))
+    playerIMG = Player().image
+    gameDisplay.blit(bg, (0, 0))
     play(gameDisplay, niv)
 
-gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
-P1 = Player()
-AXE = Axe(P1.pos)
-link = pygame.sprite.GroupSingle(P1)
-all_sprites = pygame.sprite.Group()
-all_sprites.add(P1)
-
-platforms = pygame.sprite.Group()
-bg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
-playerIMG = Player().image
 
 
-gameDisplay.blit(bg, (0, 0))
 
 pygame.quit()
