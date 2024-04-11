@@ -116,6 +116,10 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         if self.frame_index >= len(self.animation_list):
             self.frame_index = 0
 
+    def check_died(self):
+        if self.pos.y >= 1150:
+            self.pos = BaseWindow().vec(250,BaseWindow().hei//2)
+
     def draw(self):
         gameDisplay.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
@@ -270,6 +274,7 @@ def play(gameDisplay, niv):
 ################# GAME UPDATE/DISPLAY #################
 
         P1.move(camera_offset_x)
+        P1.check_died()
         
         if pygame.time.get_ticks() - lastaxe >= (cooldownaxe/2) and AxeBaseActive:
             AxeBaseActive = False
