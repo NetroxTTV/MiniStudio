@@ -10,10 +10,10 @@ pygame.init()
 class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self) -> None:
         super().__init__()
-        self.wid = 1920
-        self.hei = 1080
+        self.wid = 920
+        self.hei = 1380
         self.fps = 120
-        self.ACC = 1
+        self.ACC = 0.8
         self.FRIC = -0.14
         self.FramePerSec = pygame.time.Clock()
         self.vec = pygame.math.Vector2 
@@ -39,7 +39,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         #standing animation
         for i in range(1,13):
             img = pygame.image.load(f'standing_animation/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (int(img.get_width()*0.7), int(img.get_height()*0.7)))
+            img = pygame.transform.scale(img, (int(img.get_width()*0.4), int(img.get_height()*0.4)))
             self.animation_list.append(img)
         
         self.image = self.animation_list[self.frame_index]
@@ -58,10 +58,12 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
             if pressed_keys[K_q]:
                 self.acc.x = -BaseWindow().ACC
                 self.direction = -1
+                self.flip = True
                
             if pressed_keys[K_d]:
                 self.acc.x = BaseWindow().ACC
                 self.direction = 1
+                self.flip = False
                 
              
         self.acc.x += self.vel.x * self.fric
@@ -73,25 +75,19 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
-            if hits[0].rect.top - P1.rect.bottom > -20:
-                self.vel.y = 0
-                self.pos.y = hits[0].rect.top +1
-            else:
-                self.acc = lastacc
-                self.vel = lastvel
-                self.pos.x = lastpos
-                self.rect.midbottom = self.pos
-                self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
-        if len(hits)>1:
-            if hits[1].rect.top - P1.rect.bottom < -20:
-                self.acc = lastacc
-                self.vel = lastvel
-                self.pos.x = lastpos
-                self.rect.midbottom = self.pos
-                self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
-                if len(hits)>2:
-                    self.vel.y = 0
-                    self.pos.y = hits[0].rect.top +1
+            for collision in hits:
+                if collision.rect.top - self.rect.bottom > -27:
+                    if collision.rect.center[0] - self.rect.center[0] > -60 and collision.rect.center[0] - self.rect.center[0] < 60:
+                        self.vel.y = 0
+                        self.pos.y = collision.rect.top +1
+                        self.rect.midbottom = self.pos
+                        self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
+                else:
+                    self.acc = lastacc
+                    self.vel = lastvel
+                    self.pos.x = lastpos
+                    self.rect.midbottom = self.pos
+                    self.rect.midbottom += BaseWindow().vec(camera_offset_x,0)
         
 
         
@@ -100,20 +96,15 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
     def jump(self):
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
-            self.vel.y = -15
+            for collision in hits:
+                if collision.rect.top - self.rect.bottom > -3 and self.vel.y > -10:
+                    self.vel.y = -15
     
-    def dash(self):
-        hits = pygame.sprite.spritecollide(self ,platforms, False)
-        if hits:
-            self.img = pygame.transform.rotate(self.img, -90)
-            self.vel.x += 30 * (1 if self.vel.x >= -0.01 else -1)
-            return True
-        return False
     
     def slide(self):
         hits = pygame.sprite.spritecollide(P1 ,platforms, False)
         if hits:
-            self.fric = -0.009
+            self.fric = 0.000000000000000001
 
     def update_animation(self):
         ANIMATION_COOLDOWN = 100
@@ -128,16 +119,28 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
     def draw(self):
         gameDisplay.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
+class Axe(pygame.sprite.Sprite):
+    def __init__(self, Playerpos):
+        super().__init__()
+        
+        self.surf = pygame.Surface((60,30))
+        self.surf.fill((0,0,0))
+        self.rect = self.surf.get_rect()
+        self.img = pygame.transform.scale(pygame.image.load('pik.png'), (60, 30))
 
-class snowball:
+        self.pos = Playerpos
+        
+class Snowball(pygame.sprite.Sprite):
     def __init__(self, x, y, targetx, targety):
-        self.speed = 20
-    
+        super().__init__()
+
+        self.speed = 10
+        
         self.surf = pygame.Surface((20,20))
         self.rect = self.surf.get_rect()
+        self.img = pygame.transform.scale(pygame.image.load('snowball.png'), (20, 20))
 
         self.rect.midbottom = P1.rect.midbottom
-        self.point = pygame.mouse.get_pos()
 
         self.angle = math.atan2(targety-y, targetx-x) 
 
@@ -147,8 +150,7 @@ class snowball:
         self.pos = BaseWindow().vec((x, y))
 
     def move(self):
-        self.acc = BaseWindow().vec(0,0.3)
-        
+        self.acc = BaseWindow().vec(0,0.1)
 
         self.acc.x += self.vel.x * -0.001
         self.vel += self.acc
@@ -204,10 +206,7 @@ def setup_imgs(window_width, window_height):
     # background image
     background = pygame.transform.scale(pygame.image.load(r'bg2.jpg'), (window_width, window_height))
 
-    # snowball image
-    snowballimg = pygame.transform.scale(pygame.image.load(r'snowball.png'), (20, 20))
-
-    return background, snowballimg
+    return background
 
 def gd(window_width, window_height): # PAS TOUCHE
     gd = pygame.display.set_mode((window_width,window_height))
@@ -216,16 +215,20 @@ def gd(window_width, window_height): # PAS TOUCHE
     
 def play(gameDisplay, playerIMG):
     
+    
     clock = pygame.time.Clock()
-    lastsnowball = pygame.time.get_ticks()
-    cooldownsnowball = 0  #ms
-    lastdash = pygame.time.get_ticks()
-    cooldowndash = 1000 #ms
-    sliding = False
-    running = True
-    s = [] 
+    startCD =  pygame.time.get_ticks()
+    
+    lastsnowball = startCD
+    cooldownsnowball = 300#ms
+    snowballs = []
+    
+    lastaxe = startCD
+    cooldownaxe = 2000#ms
+    
+    AxeBaseActive = False
     n = Niveau(gameDisplay, "niv2")
-
+    running = True  
     while running:
         
         clock.tick(BaseWindow().fps)
@@ -235,25 +238,32 @@ def play(gameDisplay, playerIMG):
         P1.update_animation()
         P1.draw()
 
-        camera_offset_x = BaseWindow().wid // 8 - P1.pos.x - 25
+        camera_offset_x = BaseWindow().wid // 6 - P1.pos.x - 25
 
         gameDisplay.fill((0, 0, 0))
         gameDisplay.blit(bg, (0, 0))
         
         for event in pygame.event.get():
 
-################### CLICK CHECK ################### 
+##################### CLICK CHECK ##################### 
+            
+            now = pygame.time.get_ticks()
             
             if pygame.mouse.get_pressed()[0]:
-                now = pygame.time.get_ticks()
                 if now - lastsnowball >= cooldownsnowball:
                     lastsnowball = now
                     x,y = pygame.mouse.get_pos()
-                    s.append(snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y ))
-                    snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] - 25,  x,y)
+                    snowballs.append(Snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] -25,  x,y ))
+                    Snowball(P1.rect.midbottom[0] - 25, P1.rect.midbottom[1] - 25,  x,y)
+            
+            if pygame.mouse.get_pressed()[2]:
+                if now - lastaxe >= cooldownaxe:
+                    lastaxe = now
+                    AxeBaseActive = True
 
-
-################### PLAYER MOVEMENT ################### 
+#######################################################
+################### PLAYER MOVEMENT ###################
+            
             
             keys = pygame.key.get_pressed()
             if keys[pygame.K_o]:
@@ -261,44 +271,45 @@ def play(gameDisplay, playerIMG):
                 running = False
             if keys[pygame.K_SPACE]:
                 P1.jump()
-            
-            if keys[pygame.K_LSHIFT]:
-                now = pygame.time.get_ticks()
-                if now - lastdash >= cooldowndash and -10 < P1.vel.x < 10:
-                    lastdash = now
-                    playerIMG = pygame.transform.rotate(playerIMG, -90)
-                    sliding = True
-                    P1.dash()
-            now = pygame.time.get_ticks()
-            if now - lastdash >= (cooldowndash //30)  and sliding:  
-                playerIMG = pygame.transform.rotate(playerIMG, 90)
-                sliding = False
+                
+#######################################################
+################# GAME UPDATE/DISPLAY #################
 
         P1.move(camera_offset_x)
-        gameDisplay.blit(playerIMG, P1.rect)
-        gameDisplay.blit(playerIMG, P1.rect)
+        
+        if pygame.time.get_ticks() - lastaxe >= (cooldownaxe/2) and AxeBaseActive:
+            AxeBaseActive = False
+        else:
+            AXE.rect.center = P1.rect.center + BaseWindow().vec((50*P1.direction,15))
+            
+        #gameDisplay.blit(playerIMG, P1.rect)
+        #gameDisplay.blit(playerIMG, P1.rect)
+        
+        P1.draw()
+        
+        if AxeBaseActive:
+            gameDisplay.blit(AXE.surf, AXE.rect)
+            
         n.draw(camera_offset_x)
 
-        for entity in s:
+        for entity in snowballs:
 
-            gameDisplay.blit(snowballimg, entity.rect)
+            gameDisplay.blit(entity.img , entity.rect)
             entity.move()
         link.update()
         pygame.display.update() 
-        
-        
-
-    #####################
-
+    
+#######################################################
 
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
 P1 = Player()
+AXE = Axe(P1.pos)
 link = pygame.sprite.GroupSingle(P1)
 all_sprites = pygame.sprite.Group()
 all_sprites.add(P1)
 
 platforms = pygame.sprite.Group()
-bg, snowballimg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
+bg = setup_imgs(BaseWindow().wid, BaseWindow().hei)
 playerIMG = Player().image
 
 
