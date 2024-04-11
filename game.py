@@ -71,6 +71,7 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         if pressed_keys[K_s]:
             self.slide()
         else:
+            self.sliding = False
             if pressed_keys[K_q]:
                 self.acc.x = -BaseWindow().ACC
                 self.direction = -1
@@ -138,29 +139,10 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
         mx, my = pygame.mouse.get_pos()
         click = False
         button = pygame.Rect(BaseWindow().wid//2, BaseWindow().hei//2, 200, 50)
-        if self.pos.x >= 5127 and self.niveau <= 10:
-                if button.collidepoint((mx,my)):
-                    gameDisplay.blit(outline_image, (BaseWindow().wid//2 + 50 - outline_image.get_width() + button_1_image.get_width(), BaseWindow().hei//2 - 5))  # -5 pour centrer l'entourage autour du bouton
-                    gameDisplay.blit(outline_image_flipped, (BaseWindow().wid//2 - 200 - outline_image_flipped.get_width() + button_1_image.get_width(), BaseWindow().hei//2 - 5))
-                    gameDisplay.blit(button_1_image, (BaseWindow().wid//2, BaseWindow().hei//2))
-
-                if button.collidepoint((mx, my)):
-                    if click:
-                        
-                        Start_file(self.niveau + 1)
-
-                for event in pygame.event.get():
-                    if event.type == QUIT:
-                        pygame.quit()
-                        sys.exit()
-                    if event.type == KEYDOWN:
-                        if event.key == K_ESCAPE:
-                            pygame.quit()
-                            sys.exit()
-                    if event.type == MOUSEBUTTONDOWN:
-                        if event.button == 1:
-                            click = True
-
+        if self.pos.x >= 5127:
+            pygame.quit()
+            sys.exit()
+            
 class Axe(pygame.sprite.Sprite):
     def __init__(self, Playerpos):
         super().__init__()
@@ -203,7 +185,7 @@ class Snowball(pygame.sprite.Sprite):
 class Niveau(pygame.sprite.Sprite):
     def __init__(self, gameDisplay,niv:str):
         super().__init__()
-        self.coords = open(f"{niv}.csv", "r", encoding='utf-8')
+        self.coords = open(f"niveau/{niv}.csv", "r", encoding='utf-8')
         self.length = 0
         self.tab = []
         self.tab_area = []
@@ -212,7 +194,7 @@ class Niveau(pygame.sprite.Sprite):
         self.rects = []
         self.images = []
         
-        for x in open(f"{niv}.csv"):
+        for x in open(f"niveau/{niv}.csv"):
             self.length += 1
             y = x.split(",")
 
@@ -220,7 +202,7 @@ class Niveau(pygame.sprite.Sprite):
 
         for i in range(self.length):
             for j in range(80):
-                if self.tab[i][j] == "0" or self.tab[i][j] == "1" or self.tab[i][j] == "2" or self.tab[i][j] == "3" or self.tab[i][j] == "4" or self.tab[i][j] == "5" or self.tab[i][j] == "6":
+                if self.tab[i][j] == "0" or self.tab[i][j] == "1" or self.tab[i][j] == "2" or self.tab[i][j] == "3" or self.tab[i][j] == "4" or self.tab[i][j] == "5" or self.tab[i][j] == "6" or self.tab[i][j] == "7" or self.tab[i][j] == "8":
                     self.image = pygame.transform.scale(pygame.image.load(rf'img/tile/{self.tab[i][j]}.png'), (68, 68))
                     self.gameDisplay.blit(self.image, (500,500))
                     self.images.append(self.image)
