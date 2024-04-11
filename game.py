@@ -10,8 +10,8 @@ pygame.init()
 class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self) -> None:
         super().__init__()
-        self.wid = 920
-        self.hei = 1380
+        self.wid = 1920
+        self.hei = 1080
         self.fps = 120
         self.ACC = 0.8
         self.FRIC = -0.14
@@ -161,7 +161,7 @@ class Snowball(pygame.sprite.Sprite):
 class Niveau(pygame.sprite.Sprite):
     def __init__(self, gameDisplay,niv:str):
         super().__init__()
-        self.coords = open(f"level0_data.csv", "r", encoding='utf-8')
+        self.coords = open(f"{niv}.csv", "r", encoding='utf-8')
         self.length = 0
         self.tab = []
         self.tab_area = []
@@ -170,14 +170,14 @@ class Niveau(pygame.sprite.Sprite):
         self.rects = []
         self.images = []
         
-        for x in open(f"level0_data.csv"):
+        for x in open(f"{niv}.csv"):
             self.length += 1
             y = x.split(",")
 
             self.tab.append(y)
 
         for i in range(self.length):
-            for j in range(80):
+            for j in range(100):
                 if self.tab[i][j] == "0" or self.tab[i][j] == "1" or self.tab[i][j] == "2" or self.tab[i][j] == "3" or self.tab[i][j] == "4" or self.tab[i][j] == "5" or self.tab[i][j] == "6":
                     self.image = pygame.transform.scale(pygame.image.load(rf'img/tile/{self.tab[i][j]}.png'), (68, 68))
                     self.gameDisplay.blit(self.image, (500,500))
@@ -204,7 +204,7 @@ class Platform(pygame.sprite.Sprite): # PAS TOUCHE
 
 def setup_imgs(window_width, window_height):
     # background image
-    background = pygame.transform.scale(pygame.image.load(r'bg2.jpg'), (window_width, window_height))
+    background = pygame.transform.scale(pygame.image.load(r'Fond_2eme_niveau.png').convert_alpha(), (window_width, window_height))
 
     return background
 
@@ -213,7 +213,7 @@ def gd(window_width, window_height): # PAS TOUCHE
     pygame.display.set_caption('Game')
     return gd
     
-def play(gameDisplay, playerIMG):
+def play(gameDisplay, niv):
     
     
     clock = pygame.time.Clock()
@@ -227,7 +227,7 @@ def play(gameDisplay, playerIMG):
     cooldownaxe = 2000#ms
     
     AxeBaseActive = False
-    n = Niveau(gameDisplay, "niv2")
+    n = Niveau(gameDisplay, niv)
     running = True  
     while running:
         
@@ -301,6 +301,10 @@ def play(gameDisplay, playerIMG):
     
 #######################################################
 
+def Start_file(niv):
+    print(niv, "aaaa")
+    play(gameDisplay, niv)
+
 gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
 P1 = Player()
 AXE = Axe(P1.pos)
@@ -314,7 +318,5 @@ playerIMG = Player().image
 
 
 gameDisplay.blit(bg, (0, 0))
-
-play(gameDisplay, playerIMG)
 
 pygame.quit()
