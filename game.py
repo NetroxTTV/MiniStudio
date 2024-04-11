@@ -12,7 +12,7 @@ class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
         super().__init__()
         self.wid = 1020
         self.hei = 580
-        self.fps = 160
+        self.fps = 60
         self.ACC = 1
         self.FRIC = -0.14
         self.FramePerSec = pygame.time.Clock()
@@ -199,7 +199,6 @@ def play(gameDisplay):
 
     lastaxe = startCD
     cooldownaxe = 1000#ms
-    ChargeStart = 0
     
     nowframe = 0
     lastframe = startCD
@@ -254,14 +253,10 @@ def play(gameDisplay):
 
         now = pygame.time.get_ticks()
 
-        if now - lastdash >= (cooldowndash //5)  and sliding:
-            P1.img = pygame.transform.rotate(P1.img, 90)
-            sliding = False
         if now - lastaxe >= (cooldownaxe/2) and AxeBaseActive:
             AxeBaseActive = False
         else:
             AXE.rect.center = P1.rect.center + BaseWindow().vec((50*P1.direction,15))
-
         
         P1.move(camera_offset_x)
         PT1.move(camera_offset_x)
@@ -271,27 +266,25 @@ def play(gameDisplay):
         gameDisplay.fill((0,0,0))
         gameDisplay.blit(bg, (0, 0))
 
-        player_rect = pygame.Rect(P1.pos.x + camera_offset_x - 30, P1.pos.y - 80, 50, 80)
         gameDisplay.blit(P1.surf, P1.rect)
+        
         if P1.vel.x > 0.1 or P1.vel.x < -0.1:
-            if now - lastframe >= 100:
-                lastframe = now
-                nowframe += 1
-            frame = running_stance[nowframe]
-            if nowframe > len(running_stance) - 2:
-                    nowframe = 0
+            nowframe += 0.2
+            
+            frame = running_stance[int(nowframe)]
+            if nowframe >= len(running_stance) - 1:
+                nowframe = 0
             image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
         else:
-            if now - lastframe > 100:
-                lastframe = now
-                nowframe += 1
-            frame = base_stance[nowframe]
-            if nowframe > len(base_stance) - 2:
-                    nowframe = 0
+            nowframe += 0.2
+            
+            frame = base_stance[int(nowframe)]
+            if nowframe >= len(base_stance) - 1:
+                nowframe = 0
                     
         image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
         image = pygame.transform.flip(image, P1.flip, False)
-        image_rect = (P1.rect[0] - image.get_width()/8,P1.rect[1],image.get_width(),image.get_height())
+        image_rect = (P1.rect[0] - image.get_width()/8 ,P1.rect[1],image.get_width(),image.get_height())
         
         gameDisplay.blit(image,image_rect)
         
@@ -343,6 +336,7 @@ gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
 ss= spritesheet('ANIMATIONS_SPRITESHEET.png')
 # Sprite is 16x16 pixels at location 0,0 in the file...
 base_stance = []
+running_stance = []
 base_stance = ss.images_at([(0,62,351,269),(352,62,351,269),(704,62,351,269),(1056,62,351,269),(1408,62,351,269),(0,332,351,269),(352,62,351,269),(704,62,351,269),(1056,62,351,269),(1408,62,351,269),(0,602,351,269),(352,602,351,269)],colorkey=(0,255,0))
 running_stance = ss.images_at([(0,1412,351,269),(352,1412,351,269),(704,1412,351,269),(1056,1412,351,269),(1408,1412,351,269),(0,1682,351,269),(352,1682,351,269),(704,1682,351,269),(1056,1682,351,269),(1408,1682,351,269)],colorkey=(0,255,0))
 play(gameDisplay)
