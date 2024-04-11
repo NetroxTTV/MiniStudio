@@ -12,7 +12,7 @@ class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
         super().__init__()
         self.wid = 1020
         self.hei = 580
-        self.fps = 60
+        self.fps = 160
         self.ACC = 1
         self.FRIC = -0.14
         self.FramePerSec = pygame.time.Clock()
@@ -269,18 +269,18 @@ def play(gameDisplay):
         gameDisplay.blit(P1.surf, P1.rect)
         
         if P1.vel.x > 0.1 or P1.vel.x < -0.1:
-            nowframe += 0.2
-            
-            frame = running_stance[int(nowframe)]
-            if nowframe >= len(running_stance) - 1:
+            nowframe += 0.1
+            if nowframe >= len(running_stance):
                 nowframe = 0
+            frame = running_stance[int(nowframe)]
+            
             image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
         else:
-            nowframe += 0.2
-            
-            frame = base_stance[int(nowframe)]
-            if nowframe >= len(base_stance) - 1:
+            nowframe += 0.12
+            if nowframe >= len(base_stance):
                 nowframe = 0
+            frame = base_stance[int(nowframe)]
+        print(nowframe)
                     
         image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
         image = pygame.transform.flip(image, P1.flip, False)
@@ -337,7 +337,7 @@ ss= spritesheet('ANIMATIONS_SPRITESHEET.png')
 # Sprite is 16x16 pixels at location 0,0 in the file...
 base_stance = []
 running_stance = []
-base_stance = ss.images_at([(0,62,351,269),(352,62,351,269),(704,62,351,269),(1056,62,351,269),(1408,62,351,269),(0,332,351,269),(352,62,351,269),(704,62,351,269),(1056,62,351,269),(1408,62,351,269),(0,602,351,269),(352,602,351,269)],colorkey=(0,255,0))
+base_stance = ss.images_at([(0,62,351,269),(352,62,351,269),(704,62,351,269),(1056,62,351,269),(1408,62,351,269),(0,332,351,269),(352,332,351,269),(704,332,351,269),(1056,332,351,269),(1408,332,351,269),(0,602,351,269),(352,602,351,269)],colorkey=(0,255,0))
 running_stance = ss.images_at([(0,1412,351,269),(352,1412,351,269),(704,1412,351,269),(1056,1412,351,269),(1408,1412,351,269),(0,1682,351,269),(352,1682,351,269),(704,1682,351,269),(1056,1682,351,269),(1408,1682,351,269)],colorkey=(0,255,0))
 play(gameDisplay)
 
