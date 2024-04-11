@@ -4,6 +4,7 @@ from pygame.locals import *
 import sys
 import math
 import random
+import temp
 #from sol import Sol
 pygame.init()
 
@@ -119,6 +120,12 @@ class Player(pygame.sprite.Sprite): # PAS TOUCHE
     def check_died(self):
         if self.pos.y >= 1150:
             self.pos = BaseWindow().vec(250,BaseWindow().hei//2)
+
+    def check_end(self):
+        print(self.pos.x)
+        if self.pos.x >= 5127:
+            temp.exec()
+                    
 
     def draw(self):
         gameDisplay.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
@@ -275,6 +282,7 @@ def play(gameDisplay, niv):
 
         P1.move(camera_offset_x)
         P1.check_died()
+        P1.check_end()
         
         if pygame.time.get_ticks() - lastaxe >= (cooldownaxe/2) and AxeBaseActive:
             AxeBaseActive = False
