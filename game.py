@@ -355,7 +355,7 @@ def Start_file(niv):
     all_sprites.add(P1)
     platforms = pygame.sprite.Group()
     bg = pygame.transform.scale(pygame.image.load(r'IMAGES/img/background.png').convert_alpha(), (BaseWindow().wid, BaseWindow().hei))
-    E1 = ennemi.start_e('ennemy', 2000, 100, 3)
+    E1 = ennemi.start_e('ennemy', 1000, 100, 3)
 
     ss= spritesheet('IMAGES/animation/ANIMATIONS_SPRITESHEET.png')
     
