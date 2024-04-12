@@ -13,6 +13,8 @@ class ennemy(pygame.sprite.Sprite):
         self.vel_y = False
         self.flip = False
         self.animation_list =[]
+        moving_left = False
+        moving_right = False
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
@@ -79,6 +81,7 @@ class ennemy(pygame.sprite.Sprite):
             self.update_time = pygame.time.get_ticks()
 
     def draw(self):
+        
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         
 
