@@ -78,8 +78,9 @@ class ennemy(pygame.sprite.Sprite):
             self.frame_index = 0
             self.update_time = pygame.time.get_ticks()
 
-    def draw(self):
-        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+    def draw(self, camera_offset_x):
+        self.rect.move(camera_offset_x,0)
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect )
         
 
 

@@ -326,7 +326,7 @@ def play(gameDisplay, niv):
         
         
         ennemi.E1.update_animation()
-        ennemi.E1.draw()
+        ennemi.E1.draw(camera_offset_x)
 
         link.update()
         pygame.display.update() 
