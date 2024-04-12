@@ -27,6 +27,9 @@ font_path = 'IMAGES/font/Norse.otf'
 font_size = 30 
 custom_font = pygame.font.Font(font_path, font_size)
 
+background_image = pygame.image.load('IMAGES/img/Plan_de_travail_1.png')
+background_image = pygame.transform.scale(background_image, (500, 500))
+
 def draw_text(text, font, color, surface, x, y, centered=False):
     textobj = font.render(text, True, color)
     textrect = textobj.get_rect()
@@ -65,7 +68,7 @@ def main_menu():
     button_2_y = 200   
     click = False
     while True:
-        screen.fill((0, 0, 0)) 
+        screen.blit(background_image, (0, 0))
 
         draw_text('God Ass Kicker', custom_font, (255, 255, 255), screen, largeur_ecran / 2, button_1_y + -70, centered=True)  
 
@@ -85,9 +88,7 @@ def main_menu():
         screen.blit(button_2_image, (button_2_x, button_2_y))
 
         draw_text('Jouer', custom_font, (255, 255, 255), screen, screen_width / 2, screen_height / 2 - 125, centered=True)
-        pygame.draw.rect(screen, (0, 0, 0), button_1, 2)
         draw_text('Options', custom_font, (255, 255, 255), screen, screen_width / 2, screen_height / 2 -24, centered=True)
-        pygame.draw.rect(screen, (0, 0, 0), button_2, 2)
 
         if button_1.collidepoint((mx, my)):
             if click:
@@ -179,7 +180,7 @@ def options():
     click = False
     running = True
     while running:
-        screen.fill((0, 0, 0))
+        screen.blit(background_image, (0, 0))
         draw_text('Options', custom_font, (255, 255, 255), screen, largeur_ecran / 2, button_3_y + -80, centered=True)
 
         mx, my = pygame.mouse.get_pos()
@@ -198,9 +199,7 @@ def options():
 
 
         draw_text('Son', custom_font, (255, 255, 255), screen, screen_width / 2, screen_height / 2 - 125, centered=True)
-        pygame.draw.rect(screen, (0, 0, 0), button_3, 2)
         draw_text('Resolution', custom_font, (255, 255, 255), screen, screen_width / 2, screen_height / 2 -24, centered=True)
-        pygame.draw.rect(screen, (0, 0, 0), button_4, 2)
 
         if button_3.collidepoint((mx, my)):
             if click:

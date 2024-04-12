@@ -7,6 +7,26 @@ import random
 import ennemi
 
 pygame.init()
+clock = pygame.time.Clock()
+
+class FPSCounter:
+    def __init__(self, surface, font, clock, color, pos):
+        self.surface = surface
+        self.font = font
+        self.clock = clock
+        self.pos = pos
+        self.color = color
+
+        self.fps_text = self.font.render(str(int(self.clock.get_fps())) + "FPS", False, self.color)
+        self.fps_text_rect = self.fps_text.get_rect(center=(self.pos[0], self.pos[1]))
+
+    def render(self):
+        self.surface.blit(self.fps_text, self.fps_text_rect)
+
+    def update(self):
+        text = f"{self.clock.get_fps():2.0f} FPS"
+        self.fps_text = self.font.render(text, False, self.color)
+        self.fps_text_rect = self.fps_text.get_rect(center=(self.pos[0], self.pos[1]))
 
 class BaseWindow(pygame.sprite.Sprite): # PAS TOUCHE
     def __init__(self) -> None:
@@ -222,12 +242,9 @@ def gd(window_width, window_height): # PAS TOUCHE
     pygame.display.set_caption('Game')
     return gd
     
-def play(gameDisplay, niv):
-    
-    
-    clock = pygame.time.Clock()
+def play(gameDisplay, niv, fps_counter):
     startCD =  pygame.time.get_ticks()
-    
+
     lastsnowball = startCD
     cooldownsnowball = 300#ms
     snowballs = []
@@ -241,8 +258,6 @@ def play(gameDisplay, niv):
     n = Niveau(gameDisplay, niv)
     running = True  
     while running:
-        
-        clock.tick(BaseWindow().fps)
         camera_offset_x = BaseWindow().wid // 6 - P1.pos.x - 25
 
         gameDisplay.fill((0, 0, 0))
@@ -315,8 +330,6 @@ def play(gameDisplay, niv):
         image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
         image = pygame.transform.flip(image, P1.flip, False)
         image_rect = (P1.rect[0] - image.get_width()/8 ,P1.rect[1],image.get_width(),image.get_height())
-        
-
         gameDisplay.blit(image,image_rect)
 
         for entity in snowballs:
@@ -324,14 +337,19 @@ def play(gameDisplay, niv):
             gameDisplay.blit(entity.img , entity.rect)
             entity.move()
         
-        
         ennemi.E1.update_animation()
         ennemi.E1.draw(camera_offset_x)
 
+        fps_counter.render()
+        fps_counter.update()
+
         link.update()
         pygame.display.update() 
+        clock.tick(100000) #fps
     
-#######################################################
+############################################################################# 
+##########################    START FUNCTION    ############################# 
+############################################################################# 
 
 def Start_file(niv):
     global gameDisplay
@@ -345,7 +363,6 @@ def Start_file(niv):
     global base_stance
     global E1
 
-
     gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
     P1 = Player(niv)
     AXE = Axe(P1.pos)
@@ -356,6 +373,8 @@ def Start_file(niv):
     bg = pygame.transform.scale(pygame.image.load(r'IMAGES/img/background.png').convert_alpha(), (BaseWindow().wid, BaseWindow().hei))
     E1 = ennemi.start_e('ennemy', 1000, 100, 3)
 
+    fps_counter = FPSCounter(gameDisplay, pygame.font.Font(None, 36), clock, (0, 0, 255), (150, 10))
+
     ss= spritesheet('IMAGES/animation/ANIMATIONS_SPRITESHEET.png')
     
     base_stance = []
@@ -365,6 +384,10 @@ def Start_file(niv):
     sliding_stance = ss.images_at([(0,872,351,269),(352,872,351,269),(704,872,351,269),(1056,872,351,269),(1408,872,351,269),(0,1142,351,269),(352,1142,351,269),(704,1142,351,269)],colorkey=(0,255,0))
 
     gameDisplay.blit(bg, (0, 0))
-    play(gameDisplay, niv)
+    play(gameDisplay, niv, fps_counter)
+
+############################################################################# 
+############################################################################# 
+############################################################################# 
 
 pygame.quit()
