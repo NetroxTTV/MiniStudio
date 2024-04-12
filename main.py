@@ -65,7 +65,6 @@ def main_menu():
     button_2_y = 200   
     click = False
     while True:
-        screen.fill((0, 0, 0)) 
 
         draw_text('God Ass Kicker', custom_font, (255, 255, 255), screen, largeur_ecran / 2, button_1_y + -70, centered=True)  
 

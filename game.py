@@ -4,6 +4,7 @@ from pygame.locals import *
 import sys
 import math
 import random
+import ennemi
 
 #from sol import Sol
 pygame.init()
@@ -199,9 +200,10 @@ class Niveau(pygame.sprite.Sprite):
                     rect = Platform(68,68, j*68, i*68)
                     platforms.add(rect)
                     self.rects.append(rect)
-
-
+                    
+                    
     def draw(self, camera_offset_x):
+        
         for i in range( 0, len(self.rects)):
             self.rects[i].move(camera_offset_x)
             self.gameDisplay.blit(pygame.transform.flip(self.images[i], self.flip, False), self.rects[i].rect.topleft)
@@ -242,7 +244,6 @@ def play(gameDisplay, niv):
     while running:
         
         clock.tick(BaseWindow().fps)
-
         camera_offset_x = BaseWindow().wid // 6 - P1.pos.x - 25
 
         gameDisplay.fill((0, 0, 0))
@@ -315,6 +316,7 @@ def play(gameDisplay, niv):
         image = pygame.transform.scale(frame, (int(frame.get_width()*0.5), int(frame.get_height()*0.5)))
         image = pygame.transform.flip(image, P1.flip, False)
         image_rect = (P1.rect[0] - image.get_width()/8 ,P1.rect[1],image.get_width(),image.get_height())
+        
 
         gameDisplay.blit(image,image_rect)
 
@@ -322,6 +324,11 @@ def play(gameDisplay, niv):
 
             gameDisplay.blit(entity.img , entity.rect)
             entity.move()
+        
+        
+        ennemi.E1.update_animation()
+        ennemi.E1.draw()
+
         link.update()
         pygame.display.update() 
     
@@ -337,6 +344,8 @@ def Start_file(niv):
     global sliding_stance
     global running_stance
     global base_stance
+    global E1
+
 
     gameDisplay = gd(BaseWindow().wid, BaseWindow().hei)
     P1 = Player(niv)
@@ -346,6 +355,7 @@ def Start_file(niv):
     all_sprites.add(P1)
     platforms = pygame.sprite.Group()
     bg = pygame.transform.scale(pygame.image.load(r'IMAGES/img/background.png').convert_alpha(), (BaseWindow().wid, BaseWindow().hei))
+    E1 = ennemi.start_e('ennemy', 2000, 100, 3)
 
     ss= spritesheet('IMAGES/animation/ANIMATIONS_SPRITESHEET.png')
     
